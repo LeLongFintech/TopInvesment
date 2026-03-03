@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #f4257b;
+  --color-primary-dark: #d11a65;
+  --color-primary-light: #ff5c9d;
+  --color-background-light: #f8f5f7;
+  --color-background-dark: #0f0508;
+  --color-surface-dark: #1a0b10;
+  --color-surface-highlight: #2d121b;
+  
+  --color-bg-dark-2: #221017;
+  --color-sidebar-bg: #181114;
+  --color-card-bg: #2a161e;
+  --color-text-main: #FFFFFF;
+  --color-text-muted: #ba9ca8;
+  --color-border-color: #543b45;
+
+  --font-display: "Manrope", sans-serif;
+  --font-body: "Noto Sans", sans-serif;
+}
+
+/* Custom Scrollbar for sleek look */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #0f0508; 
+}
+::-webkit-scrollbar-thumb {
+    background: #2d121b; 
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #f4257b; 
+}
+
+/* Range Slider Styling */
+input[type=range] {
+    -webkit-appearance: none; 
+    background: transparent; 
+}
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+}
+input[type=range]:focus {
+    outline: none; 
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.material-symbols-outlined.filled {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}

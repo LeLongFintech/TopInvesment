@@ -1,0 +1,5 @@
+{
+  "name": "StockPro",
+  "description": "A stock market analytics and filtering application.",
+  "requestFramePermissions": []
+}

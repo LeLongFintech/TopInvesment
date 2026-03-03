@@ -1,317 +1,398 @@
 import React from 'react';
 
+// ── Data ──────────────────────────────────────────────
+const stats = [
+  { icon: 'apartment', value: '800+', label: 'Doanh nghiệp niêm yết', sub: 'SET & mai' },
+  { icon: 'account_balance_wallet', value: '~$550B', label: 'Vốn hóa thị trường', sub: 'USD (2024–2025)' },
+  { icon: 'swap_horiz', value: '~$2–3B', label: 'GTGD trung bình/ngày', sub: 'Thanh khoản cao' },
+  { icon: 'public', value: 'Top 3', label: 'Đông Nam Á', sub: 'Quy mô ASEAN' },
+];
+
+const timeline = [
+  { year: '1960s', title: 'Bangkok Stock Exchange (BSE)', desc: 'Mô hình tiền thân — thị trường tư nhân đầu tiên, tuy nhiên còn thiếu khung pháp lý và cơ chế giám sát hiệu quả.', color: 'bg-slate-500' },
+  { year: '1975', title: 'SET chính thức hoạt động', desc: 'Ngày 30/04/1975, SET đi vào hoạt động theo Đạo luật SET B.E. 2517, chuyển đổi từ mô hình tư nhân sang giám sát Nhà nước.', color: 'bg-blue-500' },
+  { year: '1975–1991', title: 'Xây dựng nền tảng', desc: 'Tập trung pháp lý, chuẩn mực công bố thông tin, hoàn thiện cơ chế niêm yết và quản trị doanh nghiệp ban đầu.', color: 'bg-cyan-500' },
+  { year: '1997', title: 'Khủng hoảng tài chính châu Á', desc: 'Cải cách sâu rộng: quản trị doanh nghiệp, chuẩn mực kế toán, hệ thống giao dịch — bước ngoặt cho sự phát triển bền vững.', color: 'bg-amber-500' },
+  { year: '2012', title: 'Hiện đại hóa công nghệ', desc: 'Hệ thống giao dịch điện tử mới, nâng cao tốc độ xử lý lệnh và cải thiện đáng kể tính thanh khoản thị trường.', color: 'bg-emerald-500' },
+  { year: '2020+', title: 'Chuyển đổi số', desc: 'Định hướng phát triển sản phẩm phái sinh, tích hợp tài sản kỹ thuật số, và đẩy mạnh chuyển đổi số toàn diện.', color: 'bg-primary' },
+];
+
+const indices = [
+  { name: 'SET Index', desc: 'Chỉ số trung tâm — tính theo vốn hóa thị trường điều chỉnh free-float, phản ánh biến động giá toàn bộ cổ phiếu niêm yết. Được xem là "phong vũ biểu" của nền kinh tế Thái Lan.', icon: 'show_chart', accent: 'from-primary to-pink-600' },
+  { name: 'SET50 Index', desc: 'Đại diện 50 cổ phiếu vốn hóa lớn và thanh khoản cao nhất — tài sản cơ sở cho hợp đồng tương lai trên TFEX và các quỹ ETF.', icon: 'leaderboard', accent: 'from-blue-500 to-cyan-500' },
+  { name: 'SET100 Index', desc: 'Mở rộng thêm 50 cổ phiếu so với SET50 — vai trò quan trọng đối với nhà đầu tư tổ chức và dòng vốn quốc tế.', icon: 'stacked_line_chart', accent: 'from-emerald-500 to-teal-500' },
+];
+
+const features = [
+  { icon: 'water_drop', title: 'Thanh khoản cao', desc: 'Cơ cấu ngành đa dạng: Năng lượng, Tài chính – Ngân hàng, Hàng tiêu dùng và Du lịch chiếm tỷ trọng lớn, phản ánh khá đầy đủ cấu trúc kinh tế quốc gia.', gradient: 'from-blue-500/20 to-blue-600/5' },
+  { icon: 'category', title: 'Hệ sinh thái sản phẩm phong phú', desc: 'Cổ phiếu, trái phiếu, chứng chỉ lưu ký (DR), quỹ đầu tư hạ tầng, REITs và các sản phẩm phái sinh — đa dạng công cụ đầu tư.', gradient: 'from-emerald-500/20 to-emerald-600/5' },
+  { icon: 'eco', title: 'Đầu tư bền vững (ESG)', desc: 'Nhiều doanh nghiệp Thái Lan tham gia Dow Jones Sustainability Indices, thể hiện cam kết cao với quản trị doanh nghiệp và phát triển bền vững.', gradient: 'from-amber-500/20 to-amber-600/5' },
+];
+
+// ── Component ─────────────────────────────────────────
 export default function Dashboard() {
   return (
     <main className="flex-1 h-screen overflow-y-auto bg-background-dark relative">
       {/* Background Gradient Glow */}
-      <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
-      <div className="p-8 max-w-[1600px] mx-auto relative z-10">
-        {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div>
-            <h2 className="text-3xl font-bold text-white tracking-tight">Tổng quan thị trường</h2>
-            <p className="text-slate-400 mt-1">Cập nhật lúc 14:05:32 - 24/05/2024</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 bg-surface-dark border border-surface-highlight rounded-lg text-slate-300 hover:text-white hover:border-primary/50 transition-colors text-sm font-medium">
-              <span className="material-symbols-outlined text-[20px]">calendar_today</span>
-              <span>Hôm nay</span>
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 text-sm font-medium">
-              <span className="material-symbols-outlined text-[20px]">download</span>
-              <span>Xuất báo cáo</span>
-            </button>
-          </div>
-        </header>
+      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/8 via-primary/3 to-transparent pointer-events-none"></div>
+      <div className="absolute top-20 right-20 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {/* Card 1: VN-INDEX */}
-          <div className="bg-surface-dark border border-surface-highlight rounded-2xl p-5 hover:border-primary/30 transition-all duration-300 group">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <p className="text-slate-400 text-sm font-medium">VN-Index</p>
-                <h3 className="text-2xl font-bold text-white mt-1">1,245.50</h3>
+      <div className="p-6 md:p-8 max-w-[1400px] mx-auto relative z-10">
+
+        {/* ═══════════════ HERO SECTION ═══════════════ */}
+        <section className="mb-10">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#2a1520] via-surface-dark to-[#1a1025] border border-surface-highlight p-8 md:p-12">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-72 h-72 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+            <div className="absolute bottom-0 left-0 w-56 h-56 bg-blue-500/8 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4"></div>
+            <div className="absolute top-6 right-8 text-6xl opacity-20 select-none">🇹🇭</div>
+
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-primary text-xs font-bold uppercase tracking-wider">
+                  Tổng quan thị trường
+                </div>
               </div>
-              <span className="inline-flex items-center px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-xs font-bold">
-                <span className="material-symbols-outlined text-[14px] mr-1">trending_up</span>
-                +1.2%
-              </span>
-            </div>
-            <div className="h-10 w-full mt-2">
-              <svg className="w-full h-full text-emerald-500" preserveAspectRatio="none" viewBox="0 0 100 40">
-                <path d="M0,35 Q20,30 40,20 T100,5" fill="none" stroke="currentColor" strokeWidth="2"></path>
-                <path d="M0,35 Q20,30 40,20 T100,5 V40 H0 Z" fill="currentColor" opacity="0.1"></path>
-              </svg>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-4">
+                Stock Exchange of <br />
+                <span className="bg-gradient-to-r from-primary via-pink-400 to-primary bg-clip-text text-transparent">Thailand (SET)</span>
+              </h1>
+              <p className="text-slate-400 text-base md:text-lg max-w-3xl leading-relaxed">
+                Một trong những thị trường vốn phát triển sớm và có cấu trúc tương đối hoàn thiện trong khu vực ASEAN,
+                với hơn 800 doanh nghiệp niêm yết và tổng vốn hóa khoảng 500–600 tỷ USD.
+              </p>
             </div>
           </div>
+        </section>
 
-          {/* Card 2: HNX-INDEX */}
-          <div className="bg-surface-dark border border-surface-highlight rounded-2xl p-5 hover:border-primary/30 transition-all duration-300 group">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <p className="text-slate-400 text-sm font-medium">HNX-Index</p>
-                <h3 className="text-2xl font-bold text-white mt-1">230.15</h3>
-              </div>
-              <span className="inline-flex items-center px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-xs font-bold">
-                <span className="material-symbols-outlined text-[14px] mr-1">trending_up</span>
-                +0.5%
-              </span>
-            </div>
-            <div className="h-10 w-full mt-2">
-              <svg className="w-full h-full text-emerald-500" preserveAspectRatio="none" viewBox="0 0 100 40">
-                <path d="M0,30 Q30,35 60,15 T100,10" fill="none" stroke="currentColor" strokeWidth="2"></path>
-                <path d="M0,30 Q30,35 60,15 T100,10 V40 H0 Z" fill="currentColor" opacity="0.1"></path>
-              </svg>
-            </div>
-          </div>
-
-          {/* Card 3: UPCOM */}
-          <div className="bg-surface-dark border border-surface-highlight rounded-2xl p-5 hover:border-primary/30 transition-all duration-300 group">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <p className="text-slate-400 text-sm font-medium">UPCOM</p>
-                <h3 className="text-2xl font-bold text-white mt-1">85.40</h3>
-              </div>
-              <span className="inline-flex items-center px-2 py-1 rounded-md bg-red-500/10 text-red-400 text-xs font-bold">
-                <span className="material-symbols-outlined text-[14px] mr-1">trending_down</span>
-                -0.2%
-              </span>
-            </div>
-            <div className="h-10 w-full mt-2">
-              <svg className="w-full h-full text-red-500" preserveAspectRatio="none" viewBox="0 0 100 40">
-                <path d="M0,10 Q30,5 50,25 T100,35" fill="none" stroke="currentColor" strokeWidth="2"></path>
-                <path d="M0,10 Q30,5 50,25 T100,35 V40 H0 Z" fill="currentColor" opacity="0.1"></path>
-              </svg>
-            </div>
-          </div>
-
-          {/* Card 4: Market Cap */}
-          <div className="bg-surface-dark border border-surface-highlight rounded-2xl p-5 hover:border-primary/30 transition-all duration-300 group">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <p className="text-slate-400 text-sm font-medium">Thanh khoản</p>
-                <h3 className="text-2xl font-bold text-white mt-1">15,402 Tỷ</h3>
-              </div>
-              <span className="inline-flex items-center px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-bold">
-                <span className="material-symbols-outlined text-[14px] mr-1">show_chart</span>
-                High
-              </span>
-            </div>
-            <div className="mt-4 w-full bg-slate-800 rounded-full h-1.5">
-              <div className="bg-primary h-1.5 rounded-full" style={{ width: '75%' }}></div>
-            </div>
-            <p className="text-xs text-slate-500 mt-2 text-right">Target: 20K Tỷ</p>
-          </div>
-        </div>
-
-        {/* Main Chart & Sidebar Section */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* Main Chart */}
-          <div className="xl:col-span-2 flex flex-col gap-6">
-            <div className="bg-surface-dark border border-surface-highlight rounded-2xl p-6 shadow-lg shadow-black/20">
-              <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
+        {/* ═══════════════ STAT CARDS ═══════════════ */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          {stats.map((s, i) => (
+            <div key={i} className="bg-surface-dark border border-surface-highlight rounded-2xl p-5 hover:border-primary/30 transition-all duration-300 group">
+              <div className="flex items-start gap-3">
+                <div className="p-2.5 rounded-xl bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">
+                  <span className="material-symbols-outlined">{s.icon}</span>
+                </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                    VN-Index Chart
-                    <span className="text-xs font-normal text-slate-400 px-2 py-0.5 rounded border border-slate-700">Realtime</span>
-                  </h3>
+                  <h3 className="text-2xl font-bold text-white">{s.value}</h3>
+                  <p className="text-slate-400 text-sm font-medium">{s.label}</p>
+                  <p className="text-slate-500 text-xs mt-0.5">{s.sub}</p>
                 </div>
-                <div className="flex bg-surface-highlight rounded-lg p-1 gap-1">
-                  <button className="px-3 py-1 text-xs font-medium rounded text-slate-400 hover:text-white hover:bg-white/5 transition-colors">1D</button>
-                  <button className="px-3 py-1 text-xs font-medium rounded bg-primary text-white shadow-sm">1W</button>
-                  <button className="px-3 py-1 text-xs font-medium rounded text-slate-400 hover:text-white hover:bg-white/5 transition-colors">1M</button>
-                  <button className="px-3 py-1 text-xs font-medium rounded text-slate-400 hover:text-white hover:bg-white/5 transition-colors">3M</button>
-                  <button className="px-3 py-1 text-xs font-medium rounded text-slate-400 hover:text-white hover:bg-white/5 transition-colors">1Y</button>
-                </div>
-              </div>
-              {/* Chart Container */}
-              <div className="w-full h-[350px] relative overflow-hidden rounded-lg bg-[#13080c] border border-surface-highlight/50">
-                {/* SVG Chart Simulation */}
-                <svg className="w-full h-full" height="100%" preserveAspectRatio="none" viewBox="0 0 800 350" width="100%">
-                  <defs>
-                    <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0%" stopColor="#f4257b" stopOpacity="0.3"></stop>
-                      <stop offset="100%" stopColor="#f4257b" stopOpacity="0"></stop>
-                    </linearGradient>
-                  </defs>
-                  {/* Grid Lines */}
-                  <line stroke="#2d121b" strokeDasharray="4 4" strokeWidth="1" x1="0" x2="800" y1="70" y2="70"></line>
-                  <line stroke="#2d121b" strokeDasharray="4 4" strokeWidth="1" x1="0" x2="800" y1="140" y2="140"></line>
-                  <line stroke="#2d121b" strokeDasharray="4 4" strokeWidth="1" x1="0" x2="800" y1="210" y2="210"></line>
-                  <line stroke="#2d121b" strokeDasharray="4 4" strokeWidth="1" x1="0" x2="800" y1="280" y2="280"></line>
-                  {/* Main Line */}
-                  <path d="M0,280 C50,260 100,300 150,220 C200,140 250,180 300,150 C350,120 400,160 450,100 C500,40 550,80 600,60 C650,40 700,90 750,50 L800,30" fill="none" stroke="#f4257b" strokeWidth="3"></path>
-                  {/* Fill under line */}
-                  <path d="M0,280 C50,260 100,300 150,220 C200,140 250,180 300,150 C350,120 400,160 450,100 C500,40 550,80 600,60 C650,40 700,90 750,50 L800,30 V350 H0 Z" fill="url(#chartGradient)"></path>
-                  {/* Candlestick Decorations (Simulated) */}
-                  <rect fill="#f4257b" height="40" opacity="0.8" rx="2" width="8" x="100" y="250"></rect>
-                  <rect fill="#333" height="30" opacity="0.8" rx="2" width="8" x="250" y="150"></rect>
-                  <rect fill="#f4257b" height="50" opacity="0.8" rx="2" width="8" x="400" y="100"></rect>
-                  <rect fill="#f4257b" height="20" opacity="0.8" rx="2" width="8" x="550" y="70"></rect>
-                  <rect fill="#333" height="30" opacity="0.8" rx="2" width="8" x="700" y="60"></rect>
-                </svg>
-                {/* Tooltip Simulation */}
-                <div className="absolute top-[50px] left-[600px] bg-surface-highlight border border-primary/30 p-2 rounded shadow-xl backdrop-blur-sm">
-                  <p className="text-[10px] text-slate-400">11:30 AM</p>
-                  <p className="text-sm font-bold text-white">1,248.12</p>
-                </div>
-                <div className="absolute top-[58px] left-[604px] size-2 rounded-full bg-primary ring-4 ring-primary/20"></div>
               </div>
             </div>
+          ))}
+        </section>
 
-            {/* Market Sectors Heatmap (Simplified) */}
-            <div className="bg-surface-dark border border-surface-highlight rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4">Dòng tiền ngành</h3>
-              <div className="flex gap-4 overflow-x-auto pb-2">
-                <div className="flex-1 min-w-[120px] bg-surface-highlight/30 p-4 rounded-xl border border-surface-highlight hover:border-emerald-500/50 transition-colors cursor-pointer">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="bg-emerald-500/20 p-1.5 rounded-lg text-emerald-500">
-                      <span className="material-symbols-outlined text-sm">apartment</span>
-                    </div>
-                    <span className="text-white text-sm font-semibold">BĐS</span>
-                  </div>
-                  <p className="text-emerald-400 font-bold">+2.4%</p>
-                </div>
-                <div className="flex-1 min-w-[120px] bg-surface-highlight/30 p-4 rounded-xl border border-surface-highlight hover:border-emerald-500/50 transition-colors cursor-pointer">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="bg-emerald-500/20 p-1.5 rounded-lg text-emerald-500">
-                      <span className="material-symbols-outlined text-sm">account_balance</span>
-                    </div>
-                    <span className="text-white text-sm font-semibold">Ngân hàng</span>
-                  </div>
-                  <p className="text-emerald-400 font-bold">+1.1%</p>
-                </div>
-                <div className="flex-1 min-w-[120px] bg-surface-highlight/30 p-4 rounded-xl border border-surface-highlight hover:border-red-500/50 transition-colors cursor-pointer">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="bg-red-500/20 p-1.5 rounded-lg text-red-500">
-                      <span className="material-symbols-outlined text-sm">factory</span>
-                    </div>
-                    <span className="text-white text-sm font-semibold">Thép</span>
-                  </div>
-                  <p className="text-red-400 font-bold">-0.8%</p>
-                </div>
-                <div className="flex-1 min-w-[120px] bg-surface-highlight/30 p-4 rounded-xl border border-surface-highlight hover:border-emerald-500/50 transition-colors cursor-pointer">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="bg-emerald-500/20 p-1.5 rounded-lg text-emerald-500">
-                      <span className="material-symbols-outlined text-sm">shopping_cart</span>
-                    </div>
-                    <span className="text-white text-sm font-semibold">Bán lẻ</span>
-                  </div>
-                  <p className="text-emerald-400 font-bold">+0.5%</p>
-                </div>
-              </div>
+        {/* ═══════════════ SECTION 1: TIMELINE ═══════════════ */}
+        <section className="mb-10">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+              <span className="material-symbols-outlined">history</span>
+            </div>
+            <div>
+              <h2 className="text-xl md:text-2xl font-bold text-white">Quá trình hình thành và phát triển</h2>
+              <p className="text-slate-500 text-sm">Từ BSE (1960s) đến SET hiện đại</p>
             </div>
           </div>
 
-          {/* Right Side: Top Stocks Table */}
-          <div className="xl:col-span-1 flex flex-col h-full">
-            <div className="bg-surface-dark border border-surface-highlight rounded-2xl p-0 overflow-hidden flex flex-col h-full shadow-lg shadow-black/20">
-              <div className="p-5 border-b border-surface-highlight flex justify-between items-center">
-                <h3 className="text-lg font-bold text-white">Top Cổ Phiếu</h3>
-                <button className="text-primary text-sm font-semibold hover:text-primary/80 transition-colors">Xem tất cả</button>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-[#180e12] text-slate-400 text-xs uppercase font-semibold">
-                    <tr>
-                      <th className="px-5 py-3">Mã CP</th>
-                      <th className="px-5 py-3 text-right">Giá</th>
-                      <th className="px-5 py-3 text-right">+/-</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-surface-highlight">
-                    <tr className="hover:bg-surface-highlight/30 transition-colors group cursor-pointer">
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="size-8 rounded bg-white flex items-center justify-center font-bold text-black text-xs shadow-sm">HPG</div>
-                          <div>
-                            <p className="font-bold text-white text-sm">Hòa Phát</p>
-                            <p className="text-xs text-slate-500">Thép</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <p className="text-white font-medium text-sm">28.50</p>
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <span className="inline-block px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded font-bold">+2.5%</span>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-surface-highlight/30 transition-colors group cursor-pointer">
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="size-8 rounded bg-blue-600 flex items-center justify-center font-bold text-white text-xs shadow-sm">SSI</div>
-                          <div>
-                            <p className="font-bold text-white text-sm">SSI Corp</p>
-                            <p className="text-xs text-slate-500">Chứng khoán</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <p className="text-white font-medium text-sm">32.15</p>
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <span className="inline-block px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded font-bold">+1.8%</span>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-surface-highlight/30 transition-colors group cursor-pointer">
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="size-8 rounded bg-orange-500 flex items-center justify-center font-bold text-white text-xs shadow-sm">FPT</div>
-                          <div>
-                            <p className="font-bold text-white text-sm">FPT Corp</p>
-                            <p className="text-xs text-slate-500">Công nghệ</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <p className="text-white font-medium text-sm">92.00</p>
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <span className="inline-block px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded font-bold">+1.5%</span>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-surface-highlight/30 transition-colors group cursor-pointer">
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="size-8 rounded bg-red-600 flex items-center justify-center font-bold text-white text-xs shadow-sm">VIC</div>
-                          <div>
-                            <p className="font-bold text-white text-sm">Vingroup</p>
-                            <p className="text-xs text-slate-500">Bất động sản</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <p className="text-white font-medium text-sm">45.20</p>
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <span className="inline-block px-2 py-1 bg-red-500/10 text-red-400 text-xs rounded font-bold">-1.2%</span>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-surface-highlight/30 transition-colors group cursor-pointer">
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="size-8 rounded bg-green-600 flex items-center justify-center font-bold text-white text-xs shadow-sm">VCB</div>
-                          <div>
-                            <p className="font-bold text-white text-sm">Vietcombank</p>
-                            <p className="text-xs text-slate-500">Ngân hàng</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <p className="text-white font-medium text-sm">88.10</p>
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <span className="inline-block px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded font-bold">+0.3%</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+          <div className="bg-surface-dark border border-surface-highlight rounded-2xl p-6 md:p-8">
+            <p className="text-slate-300 text-sm leading-relaxed mb-8">
+              Stock Exchange of Thailand (SET) là một trong những thị trường vốn phát triển sớm và có cấu trúc tương đối hoàn thiện trong khu vực ASEAN.
+              Quá trình hình thành thị trường bắt đầu từ những năm 1960 với mô hình tiền thân là Bangkok Stock Exchange (BSE).
+            </p>
+
+            {/* Vertical Timeline */}
+            <div className="relative">
+              {/* Timeline line */}
+              <div className="absolute left-[18px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-slate-600 via-primary/50 to-primary rounded-full"></div>
+
+              <div className="flex flex-col gap-6">
+                {timeline.map((item, i) => (
+                  <div key={i} className="flex gap-5 group">
+                    {/* Dot */}
+                    <div className="relative z-10 flex-shrink-0 mt-1">
+                      <div className={`size-[14px] rounded-full ${item.color} ring-4 ring-surface-dark group-hover:ring-surface-highlight transition-colors`}></div>
+                    </div>
+                    {/* Content */}
+                    <div className="flex-1 pb-2">
+                      <div className="flex items-baseline gap-3 mb-1">
+                        <span className="text-primary font-bold text-sm">{item.year}</span>
+                        <span className="text-white font-semibold text-sm">{item.title}</span>
+                      </div>
+                      <p className="text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        </section>
+
+        {/* ═══════════════ SECTION 2: CẤU TRÚC THỊ TRƯỜNG ═══════════════ */}
+        <section className="mb-10">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
+              <span className="material-symbols-outlined">account_tree</span>
+            </div>
+            <div>
+              <h2 className="text-xl md:text-2xl font-bold text-white">Quy mô và cấu trúc thị trường</h2>
+              <p className="text-slate-500 text-sm">Main Board, mai & TFEX</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {/* Main Board */}
+            <div className="bg-surface-dark border border-surface-highlight rounded-2xl p-6 hover:border-blue-500/30 transition-all duration-300">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400">
+                  <span className="material-symbols-outlined">domain</span>
+                </div>
+                <div>
+                  <h3 className="text-white font-bold text-lg">Main Board (SET)</h3>
+                  <span className="text-xs text-blue-400 font-medium">Sàn chính</span>
+                </div>
+              </div>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Dành cho các doanh nghiệp quy mô lớn, yêu cầu cao về vốn hóa, lợi nhuận và quản trị minh bạch.
+                Là nơi niêm yết của đa số blue-chip Thái Lan.
+              </p>
+            </div>
+
+            {/* mai */}
+            <div className="bg-surface-dark border border-surface-highlight rounded-2xl p-6 hover:border-emerald-500/30 transition-all duration-300">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400">
+                  <span className="material-symbols-outlined">rocket_launch</span>
+                </div>
+                <div>
+                  <h3 className="text-white font-bold text-lg">Market for Alternative Investment (mai)</h3>
+                  <span className="text-xs text-emerald-400 font-medium">Sàn tăng trưởng</span>
+                </div>
+              </div>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Dành cho doanh nghiệp vừa và nhỏ, công ty tăng trưởng với tiêu chuẩn niêm yết linh hoạt hơn —
+                cơ hội cho các doanh nghiệp mới nổi.
+              </p>
+            </div>
+          </div>
+
+          {/* TFEX */}
+          <div className="bg-gradient-to-br from-[#1a1528] to-surface-dark border border-surface-highlight rounded-2xl p-6 hover:border-purple-500/30 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400">
+                <span className="material-symbols-outlined">candlestick_chart</span>
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-lg">Thailand Futures Exchange (TFEX)</h3>
+                <span className="text-xs text-purple-400 font-medium">Thị trường phái sinh</span>
+              </div>
+            </div>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              Cung cấp hợp đồng tương lai và quyền chọn dựa trên chỉ số, cổ phiếu đơn lẻ, vàng và các tài sản tài chính khác.
+              Góp phần nâng cao hiệu quả định giá, tạo công cụ phòng ngừa rủi ro và cải thiện thanh khoản thị trường cơ sở.
+            </p>
+          </div>
+
+          <div className="mt-4 bg-surface-dark border border-surface-highlight rounded-2xl p-6">
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Tính đến giai đoạn 2024–2025, SET có hơn 800 doanh nghiệp niêm yết trên hai bảng chính, với tổng vốn hóa thị trường dao động khoảng
+              500–600 tỷ USD. Giá trị giao dịch trung bình ngày thường đạt mức vài tỷ USD, phản ánh tính thanh khoản tương đối cao so với các thị trường trong khu vực.
+              Cơ cấu nhà đầu tư bao gồm cả cá nhân và tổ chức, trong đó dòng vốn nước ngoài đóng vai trò quan trọng trong việc định hình xu hướng ngắn và trung hạn.
+            </p>
+          </div>
+        </section>
+
+        {/* ═══════════════ SECTION 3: HỆ THỐNG CHỈ SỐ ═══════════════ */}
+        <section className="mb-10">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+              <span className="material-symbols-outlined">monitoring</span>
+            </div>
+            <div>
+              <h2 className="text-xl md:text-2xl font-bold text-white">Hệ thống chỉ số</h2>
+              <p className="text-slate-500 text-sm">Vai trò định hướng thị trường</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            {indices.map((idx, i) => (
+              <div key={i} className="bg-surface-dark border border-surface-highlight rounded-2xl p-6 hover:border-primary/30 transition-all duration-300 group">
+                <div className={`inline-flex p-3 rounded-2xl bg-gradient-to-br ${idx.accent} mb-4`}>
+                  <span className="material-symbols-outlined text-white text-2xl">{idx.icon}</span>
+                </div>
+                <h3 className="text-white font-bold text-lg mb-2">{idx.name}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">{idx.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-surface-dark border border-surface-highlight rounded-2xl p-6">
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Ngoài các chỉ số truyền thống, thị trường còn phát triển các <span className="text-white font-medium">chỉ số ngành</span> và
+              <span className="text-white font-medium"> chỉ số bền vững</span> nhằm đáp ứng xu hướng đầu tư ESG,
+              góp phần nâng cao tính đa dạng của sản phẩm đầu tư.
+            </p>
+          </div>
+        </section>
+
+        {/* ═══════════════ SECTION 4: PHÁP LÝ & GIÁM SÁT ═══════════════ */}
+        <section className="mb-10">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">
+              <span className="material-symbols-outlined">gavel</span>
+            </div>
+            <div>
+              <h2 className="text-xl md:text-2xl font-bold text-white">Khuôn khổ pháp lý và cơ chế giám sát</h2>
+              <p className="text-slate-500 text-sm">SEC Thailand & Securities Act</p>
+            </div>
+          </div>
+
+          <div className="bg-surface-dark border border-surface-highlight rounded-2xl p-6 md:p-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* SEC */}
+              <div className="flex flex-col items-center text-center p-4 rounded-xl bg-amber-500/5 border border-amber-500/10">
+                <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-400 mb-3">
+                  <span className="material-symbols-outlined text-3xl">shield</span>
+                </div>
+                <h4 className="text-white font-bold text-sm mb-2">SEC Thailand</h4>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                  Cơ quan độc lập — xây dựng chính sách, cấp phép và giám sát hoạt động phát hành, niêm yết, môi giới.
+                </p>
+              </div>
+
+              {/* Securities Act */}
+              <div className="flex flex-col items-center text-center p-4 rounded-xl bg-amber-500/5 border border-amber-500/10">
+                <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-400 mb-3">
+                  <span className="material-symbols-outlined text-3xl">description</span>
+                </div>
+                <h4 className="text-white font-bold text-sm mb-2">Securities and Exchange Act</h4>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                  Nguyên tắc giao dịch công bằng, minh bạch — xử lý thao túng giá và giao dịch nội gián.
+                </p>
+              </div>
+
+              {/* Digital Assets */}
+              <div className="flex flex-col items-center text-center p-4 rounded-xl bg-amber-500/5 border border-amber-500/10">
+                <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-400 mb-3">
+                  <span className="material-symbols-outlined text-3xl">token</span>
+                </div>
+                <h4 className="text-white font-bold text-sm mb-2">Tài sản kỹ thuật số</h4>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                  Mở rộng sang ETF tiền mã hóa, công nhận tài sản số trong hợp đồng phái sinh — hội nhập tài chính toàn cầu.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════ SECTION 5: ĐẶC ĐIỂM NỔI BẬT ═══════════════ */}
+        <section className="mb-10">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+              <span className="material-symbols-outlined">star</span>
+            </div>
+            <div>
+              <h2 className="text-xl md:text-2xl font-bold text-white">Đặc điểm nổi bật và vị thế khu vực</h2>
+              <p className="text-slate-500 text-sm">Vì sao SET quan trọng trong ASEAN</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {features.map((f, i) => (
+              <div key={i} className={`bg-gradient-to-br ${f.gradient} border border-surface-highlight rounded-2xl p-6 hover:border-primary/20 transition-all duration-300`}>
+                <div className="p-2.5 rounded-xl bg-white/5 text-white inline-flex mb-4">
+                  <span className="material-symbols-outlined">{f.icon}</span>
+                </div>
+                <h3 className="text-white font-bold mb-2">{f.title}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ═══════════════ SECTION 6: TRIỂN VỌNG ═══════════════ */}
+        <section className="mb-10">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400">
+              <span className="material-symbols-outlined">trending_up</span>
+            </div>
+            <div>
+              <h2 className="text-xl md:text-2xl font-bold text-white">Thách thức và triển vọng 2025–2026</h2>
+              <p className="text-slate-500 text-sm">Cơ hội trong biến động</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Challenges */}
+            <div className="bg-surface-dark border border-red-500/10 rounded-2xl p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="material-symbols-outlined text-red-400">warning</span>
+                <h3 className="text-red-400 font-bold">Thách thức</h3>
+              </div>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <span className="text-red-400 mt-1">•</span>
+                  <p className="text-slate-400 text-sm leading-relaxed">Tăng trưởng kinh tế chậm lại, biến động lãi suất toàn cầu</p>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-red-400 mt-1">•</span>
+                  <p className="text-slate-400 text-sm leading-relaxed">Dịch chuyển dòng vốn quốc tế gây áp lực lên chỉ số</p>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-red-400 mt-1">•</span>
+                  <p className="text-slate-400 text-sm leading-relaxed">Niềm tin nhà đầu tư có thời điểm suy giảm</p>
+                </li>
+              </ul>
+            </div>
+
+            {/* Opportunities */}
+            <div className="bg-surface-dark border border-emerald-500/10 rounded-2xl p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="material-symbols-outlined text-emerald-400">lightbulb</span>
+                <h3 className="text-emerald-400 font-bold">Triển vọng tích cực</h3>
+              </div>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <span className="text-emerald-400 mt-1">•</span>
+                  <p className="text-slate-400 text-sm leading-relaxed">Thúc đẩy kinh tế số, phát triển hạ tầng và mở rộng sản phẩm tài chính</p>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-emerald-400 mt-1">•</span>
+                  <p className="text-slate-400 text-sm leading-relaxed">GDP dự báo cải thiện 2026 — động lực cho cổ phiếu chu kỳ và công nghệ</p>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-emerald-400 mt-1">•</span>
+                  <p className="text-slate-400 text-sm leading-relaxed">Đẩy mạnh ETF, nới lỏng quy định nhà đầu tư nước ngoài</p>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════ KẾT LUẬN ═══════════════ */}
+        <section className="mb-10">
+          <div className="relative bg-gradient-to-br from-[#2a1520] via-surface-dark to-[#1a1025] border border-surface-highlight rounded-2xl p-8 overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/8 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="material-symbols-outlined text-primary">auto_awesome</span>
+                <h3 className="text-white font-bold text-lg">Kết luận</h3>
+              </div>
+              <blockquote className="border-l-4 border-primary pl-5">
+                <p className="text-slate-300 text-sm leading-relaxed">
+                  Nhìn chung, thị trường chứng khoán Thái Lan là một hệ thống tài chính có cấu trúc hoàn chỉnh, quy mô lớn và mức độ hội nhập cao
+                  trong khu vực ASEAN. Với nền tảng pháp lý vững chắc, hệ sinh thái sản phẩm đa dạng và định hướng đổi mới công nghệ, SET tiếp tục
+                  đóng vai trò trung tâm trong việc huy động vốn và phân bổ nguồn lực cho nền kinh tế Thái Lan.
+                </p>
+                <p className="text-slate-300 text-sm leading-relaxed mt-3">
+                  Mặc dù đối mặt với thách thức ngắn hạn từ môi trường vĩ mô, triển vọng trung và dài hạn vẫn được đánh giá tích cực
+                  nhờ các cải cách cấu trúc và chiến lược phát triển thị trường vốn bền vững.
+                </p>
+              </blockquote>
+            </div>
+          </div>
+        </section>
+
       </div>
     </main>
   );

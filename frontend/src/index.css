@@ -1,51 +1,84 @@
 @import "tailwindcss";
 
+/* ── Theme Variables (Light / Dark) ── */
+:root {
+  --t-page: #f8f5f7;
+  --t-surface: #ffffff;
+  --t-surface-alt: #f3eff2;
+  --t-card: #ffffff;
+  --t-sidebar: #f5f0f3;
+  --t-el: #ede6ea;
+  --t-line: #e0d5db;
+  --t-line-alt: #ede6ea;
+  --t-heading: #1a1a2e;
+  --t-body: #4a4a5a;
+  --t-muted: #8a7a82;
+}
+
+.dark {
+  --t-page: #0f0508;
+  --t-surface: #1a0b10;
+  --t-surface-alt: #221017;
+  --t-card: #2a161e;
+  --t-sidebar: #181114;
+  --t-el: #39282f;
+  --t-line: #39282f;
+  --t-line-alt: #2d121b;
+  --t-heading: #ffffff;
+  --t-body: #cbd5e1;
+  --t-muted: #ba9ca8;
+}
+
 @theme {
+  /* Primary (constant across themes) */
   --color-primary: #f4257b;
   --color-primary-dark: #d11a65;
   --color-primary-light: #ff5c9d;
-  --color-background-light: #f8f5f7;
-  --color-background-dark: #0f0508;
-  --color-surface-dark: #1a0b10;
-  --color-surface-highlight: #2d121b;
-  
-  --color-bg-dark-2: #221017;
-  --color-sidebar-bg: #181114;
-  --color-card-bg: #2a161e;
-  --color-text-main: #FFFFFF;
-  --color-text-muted: #ba9ca8;
-  --color-border-color: #543b45;
 
+  /* Semantic colors (adapt to theme) */
+  --color-page: var(--t-page);
+  --color-surface: var(--t-surface);
+  --color-surface-alt: var(--t-surface-alt);
+  --color-card: var(--t-card);
+  --color-sidebar: var(--t-sidebar);
+  --color-el: var(--t-el);
+  --color-line: var(--t-line);
+  --color-line-alt: var(--t-line-alt);
+  --color-heading: var(--t-heading);
+  --color-body: var(--t-body);
+  --color-muted: var(--t-muted);
+
+  /* Fonts */
   --font-display: "Manrope", sans-serif;
   --font-body: "Noto Sans", sans-serif;
 }
 
-/* Custom Scrollbar for sleek look */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 ::-webkit-scrollbar-track {
-    background: #0f0508; 
+    background: var(--t-page);
 }
 ::-webkit-scrollbar-thumb {
-    background: #2d121b; 
+    background: var(--t-el);
     border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: #f4257b; 
+    background: #f4257b;
 }
 
 /* Range Slider Styling */
 input[type=range] {
-    -webkit-appearance: none; 
-    background: transparent; 
+    -webkit-appearance: none;
+    background: transparent;
 }
 input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
 }
 input[type=range]:focus {
-    outline: none; 
+    outline: none;
 }
 
 .material-symbols-outlined {

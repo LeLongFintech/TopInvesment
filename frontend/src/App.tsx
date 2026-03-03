@@ -29,7 +29,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+    <div className="flex h-screen w-full overflow-hidden bg-page font-display text-body antialiased">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       {renderContent()}
     </div>

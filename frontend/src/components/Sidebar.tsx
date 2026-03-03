@@ -1,5 +1,4 @@
 import React from 'react';
-import { useTheme } from '../ThemeContext';
 
 interface SidebarProps {
   activeTab: string;
@@ -7,7 +6,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
-  const { isDark, toggleTheme } = useTheme();
+
 
   const navItems = [
     { id: 'dashboard', icon: 'dashboard', label: 'Tổng quan' },
@@ -47,18 +46,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         </div>
       </div>
       <div className="flex flex-col gap-2">
-        {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:bg-el group w-full text-left"
-        >
-          <span className="material-symbols-outlined text-muted group-hover:text-heading transition-colors">
-            {isDark ? 'light_mode' : 'dark_mode'}
-          </span>
-          <p className="text-muted group-hover:text-heading text-sm font-medium leading-normal transition-colors">
-            {isDark ? 'Chế độ sáng' : 'Chế độ tối'}
-          </p>
-        </button>
+
         <button className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors hover:bg-el group w-full text-left">
           <span className="material-symbols-outlined text-muted group-hover:text-heading transition-colors">settings</span>
           <p className="text-muted group-hover:text-heading text-sm font-medium leading-normal transition-colors">Cài đặt</p>

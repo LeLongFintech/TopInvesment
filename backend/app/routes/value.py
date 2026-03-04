@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from app.schemas.value import ValueFilterRequest, ValueFilterResponse
 from app.services.value_service import ValueService
 
-router = APIRouter(prefix="/filters", tags=["Value Investing Filter"])
+router = APIRouter(prefix="/filters", tags=["Benjamin Graham Filter"])
 
 
 @router.post("/value", response_model=ValueFilterResponse)

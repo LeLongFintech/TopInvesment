@@ -8,7 +8,7 @@ export default function ValueFilter() {
           <div className="lg:hidden"><span className="material-symbols-outlined text-heading cursor-pointer">menu</span></div>
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center size-8 rounded bg-el text-primary"><span className="material-symbols-outlined">candlestick_chart</span></div>
-            <h2 className="text-heading text-xl font-bold tracking-tight">Bộ lọc Đầu tư giá trị</h2>
+            <h2 className="text-heading text-xl font-bold tracking-tight">Bộ lọc Benjamin Graham</h2>
           </div>
           <div className="hidden md:flex h-10 w-96 items-center rounded-xl bg-card px-3 ring-1 ring-inset ring-line focus-within:ring-primary">
             <span className="material-symbols-outlined text-muted">search</span>
@@ -23,8 +23,8 @@ export default function ValueFilter() {
       <main className="flex-1 p-6 lg:p-10 space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-line">
           <div className="max-w-2xl">
-            <h1 className="text-3xl lg:text-4xl font-black text-heading mb-3 tracking-tight">Chiến lược Giá trị cốt lõi</h1>
-            <p className="text-muted text-lg leading-relaxed">Tìm kiếm các doanh nghiệp có nền tảng tài chính vững chắc, đang bị thị trường định giá thấp hơn giá trị thực. <span className="text-primary font-medium cursor-pointer hover:underline ml-1">Tìm hiểu thêm</span></p>
+            <h1 className="text-3xl lg:text-4xl font-black text-heading mb-3 tracking-tight">Chiến lược Benjamin Graham</h1>
+            <p className="text-muted text-lg leading-relaxed">Áp dụng triết lý đầu tư giá trị của Benjamin Graham — tìm kiếm doanh nghiệp có nền tảng tài chính vững chắc, đang bị thị trường định giá thấp hơn giá trị nội tại. <span className="text-primary font-medium cursor-pointer hover:underline ml-1">Tìm hiểu thêm</span></p>
           </div>
           <div className="flex gap-3">
             <button className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-el hover:bg-el/80 text-heading font-semibold transition-colors border border-transparent hover:border-primary/50"><span className="material-symbols-outlined text-sm">save</span>Lưu bộ lọc</button>

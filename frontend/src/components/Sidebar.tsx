@@ -11,7 +11,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   const navItems = [
     { id: 'dashboard', icon: 'dashboard', label: 'Tổng quan' },
     { id: 'canslim', icon: 'tune', label: 'Bộ lọc CANSLIM' },
-    { id: 'value', icon: 'filter_alt', label: 'Bộ lọc Đầu tư giá trị' },
+    { id: 'value', icon: 'filter_alt', label: 'Bộ lọc Benjamin Graham' },
     { id: 'dividend', icon: 'payments', label: 'Bộ lọc Cổ tức' },
   ];
 

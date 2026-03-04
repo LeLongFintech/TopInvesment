@@ -1,8 +1,144 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
+
+/* ── Types ─────────────────────────────────────────────────── */
+interface GrahamResultItem {
+  symbol: string;
+  gics_industry: string | null;
+  date: string;
+  close_price: number;
+  eps: number;
+  bvps: number;
+  pe: number | null;
+  pb: number | null;
+  graham_number: number | null;
+  margin_of_safety: number | null;
+  eps_positive_years: number;
+}
+
+interface ScatterPoint { symbol: string; pe: number; margin_of_safety: number; }
+interface BubblePoint { symbol: string; pe: number; pb: number; graham_number: number; }
+interface SectorSlice { industry: string; count: number; percentage: number; }
+
+interface FilterResponse {
+  items: GrahamResultItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  filter_date: string;
+  chart_scatter: ScatterPoint[];
+  chart_bubble: BubblePoint[];
+  chart_sectors: SectorSlice[];
+}
+
+interface FilterCriteria {
+  eps_consecutive_years: number;
+  pe_max: number | null;
+  pb_max: number | null;
+  graham_gt_price: boolean;
+  margin_of_safety_min: number;
+}
+
+/* ── Default criteria (team research) ──────────────────────── */
+const DEFAULT_CRITERIA: FilterCriteria = {
+  eps_consecutive_years: 10,
+  pe_max: 15.0,
+  pb_max: 1.5,
+  graham_gt_price: true,
+  margin_of_safety_min: 0.20,
+};
+
+const API_BASE = 'http://localhost:8000/api/v1';
 
 export default function ValueFilter() {
+  /* ── State ───────────────────────────────────────────────── */
+  const [selectedDate, setSelectedDate] = useState('');
+  const [criteria, setCriteria] = useState<FilterCriteria>({ ...DEFAULT_CRITERIA });
+  const [toggles, setToggles] = useState({
+    eps: true, pe: true, pb: true, graham: true, mos: true,
+  });
+  const [results, setResults] = useState<FilterResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [sortBy, setSortBy] = useState('margin_of_safety');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [page, setPage] = useState(1);
+
+  const canRun = selectedDate.length > 0;
+
+  /* ── Handlers ────────────────────────────────────────────── */
+  const toggleCriterion = (key: keyof typeof toggles) => {
+    setToggles(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const runFilter = useCallback(async (pageNum = 1) => {
+    if (!canRun) return;
+    setLoading(true);
+    setError('');
+    setPage(pageNum);
+
+    const body = {
+      date: selectedDate,
+      eps_consecutive_years: toggles.eps ? criteria.eps_consecutive_years : 1,
+      pe_max: toggles.pe ? criteria.pe_max : null,
+      pb_max: toggles.pb ? criteria.pb_max : null,
+      graham_gt_price: toggles.graham,
+      margin_of_safety_min: toggles.mos ? criteria.margin_of_safety_min : -1.0,
+      sort_by: sortBy,
+      sort_order: sortOrder,
+      page: pageNum,
+      page_size: 50,
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/filters/value`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      const data: FilterResponse = await res.json();
+      setResults(data);
+    } catch (err: any) {
+      setError(err.message || 'Lỗi kết nối API');
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedDate, criteria, toggles, sortBy, sortOrder, canRun]);
+
+  const resetCriteria = () => {
+    setCriteria({ ...DEFAULT_CRITERIA });
+    setToggles({ eps: true, pe: true, pb: true, graham: true, mos: true });
+  };
+
+  /* ── Criterion card ──────────────────────────────────────── */
+  const CriterionCard = ({
+    label, description, active, onToggle, children,
+  }: {
+    label: string; description: string; active: boolean;
+    onToggle: () => void; children?: React.ReactNode;
+  }) => (
+    <div className={`bg-surface-alt p-5 rounded-xl border transition-all ${active ? 'border-primary/50 shadow-md shadow-primary/5' : 'border-line opacity-60'
+      }`}>
+      <div className="flex justify-between items-center mb-2">
+        <h4 className="text-heading font-bold">{label}</h4>
+        <button
+          onClick={onToggle}
+          className={`relative w-11 h-6 rounded-full transition-colors ${active ? 'bg-primary' : 'bg-el'
+            }`}
+        >
+          <span className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform ${active ? 'translate-x-5' : ''
+            }`} />
+        </button>
+      </div>
+      <p className="text-muted text-xs mb-3">{description}</p>
+      {active && children}
+    </div>
+  );
+
+  /* ── Render ──────────────────────────────────────────────── */
   return (
     <div className="flex flex-1 flex-col overflow-y-auto bg-page relative">
+      {/* Header */}
       <header className="sticky top-0 z-20 flex items-center justify-between border-b border-line bg-sidebar/90 backdrop-blur-md px-6 py-4">
         <div className="flex items-center gap-6">
           <div className="lg:hidden"><span className="material-symbols-outlined text-heading cursor-pointer">menu</span></div>
@@ -10,107 +146,317 @@ export default function ValueFilter() {
             <div className="flex items-center justify-center size-8 rounded bg-el text-primary"><span className="material-symbols-outlined">candlestick_chart</span></div>
             <h2 className="text-heading text-xl font-bold tracking-tight">Bộ lọc Benjamin Graham</h2>
           </div>
-          <div className="hidden md:flex h-10 w-96 items-center rounded-xl bg-card px-3 ring-1 ring-inset ring-line focus-within:ring-primary">
-            <span className="material-symbols-outlined text-muted">search</span>
-            <input className="w-full bg-transparent border-none text-heading placeholder-muted focus:ring-0 text-sm ml-2" placeholder="Tìm kiếm mã cổ phiếu..." type="text" />
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <button className="relative p-2 text-muted hover:text-heading transition-colors"><span className="material-symbols-outlined">notifications</span><span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-primary"></span></button>
-          <button className="p-2 text-muted hover:text-heading transition-colors"><span className="material-symbols-outlined">help</span></button>
         </div>
       </header>
+
       <main className="flex-1 p-6 lg:p-10 space-y-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-line">
-          <div className="max-w-2xl">
-            <h1 className="text-3xl lg:text-4xl font-black text-heading mb-3 tracking-tight">Chiến lược Benjamin Graham</h1>
-            <p className="text-muted text-lg leading-relaxed">Áp dụng triết lý đầu tư giá trị của Benjamin Graham — tìm kiếm doanh nghiệp có nền tảng tài chính vững chắc, đang bị thị trường định giá thấp hơn giá trị nội tại. <span className="text-primary font-medium cursor-pointer hover:underline ml-1">Tìm hiểu thêm</span></p>
-          </div>
-          <div className="flex gap-3">
-            <button className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-el hover:bg-el/80 text-heading font-semibold transition-colors border border-transparent hover:border-primary/50"><span className="material-symbols-outlined text-sm">save</span>Lưu bộ lọc</button>
-            <button className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary hover:bg-primary-dark text-white font-bold shadow-lg shadow-primary/20 transition-all"><span className="material-symbols-outlined text-sm">play_arrow</span>Chạy bộ lọc</button>
+        {/* ── Intro + Date picker + Run button ─────────────── */}
+        <div className="bg-surface-alt border border-line rounded-xl p-6 lg:p-8">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+            <div className="max-w-2xl">
+              <h1 className="text-2xl lg:text-3xl font-black text-heading mb-2 tracking-tight">
+                Chiến lược Benjamin Graham
+              </h1>
+              <p className="text-muted text-sm leading-relaxed">
+                Áp dụng triết lý đầu tư giá trị của Benjamin Graham — tìm kiếm doanh nghiệp có nền tảng tài chính vững chắc,
+                đang bị thị trường định giá thấp hơn giá trị nội tại.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <div className="flex flex-col gap-1">
+                <label className="text-muted text-xs font-medium uppercase tracking-wider">Ngày lấy danh mục</label>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="h-10 px-3 rounded-lg bg-card border border-line text-heading text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                />
+              </div>
+              <button
+                onClick={() => runFilter(1)}
+                disabled={!canRun || loading}
+                className={`flex items-center gap-2 h-10 px-6 rounded-lg text-white font-bold text-sm transition-all mt-5 ${canRun && !loading
+                    ? 'bg-primary hover:bg-primary-dark shadow-lg shadow-primary/20 cursor-pointer'
+                    : 'bg-gray-500 opacity-50 cursor-not-allowed'
+                  }`}
+              >
+                {loading ? (
+                  <><span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>Đang lọc...</>
+                ) : (
+                  <><span className="material-symbols-outlined text-sm">play_arrow</span>Chạy bộ lọc</>
+                )}
+              </button>
+            </div>
           </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-heading text-lg font-bold flex items-center gap-2"><span className="material-symbols-outlined text-primary">tune</span>Tiêu chí lọc</h3>
-              <button className="text-xs text-primary hover:text-primary-light font-bold uppercase tracking-wider">Reset tất cả</button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-surface-alt p-5 rounded-xl border border-line group hover:border-primary/50 transition-colors">
-                <div className="flex justify-between items-start mb-4"><div><p className="text-muted text-xs font-bold uppercase tracking-wider mb-1">Định giá</p><h4 className="text-heading font-bold text-lg">P/E Ratio</h4></div><span className="px-2 py-1 rounded bg-el text-primary text-xs font-bold">&lt; 15.0</span></div>
-                <div className="relative h-2 bg-el rounded-full overflow-hidden"><div className="absolute top-0 left-0 h-full w-[40%] bg-gradient-to-r from-primary to-purple-600 rounded-full"></div></div>
-                <div className="flex justify-between mt-2 text-xs text-muted"><span>0</span><span>15</span><span>50+</span></div>
-              </div>
-              <div className="bg-surface-alt p-5 rounded-xl border border-line group hover:border-primary/50 transition-colors">
-                <div className="flex justify-between items-start mb-4"><div><p className="text-muted text-xs font-bold uppercase tracking-wider mb-1">Hiệu quả</p><h4 className="text-heading font-bold text-lg">ROE</h4></div><span className="px-2 py-1 rounded bg-el text-green-400 text-xs font-bold">&gt; 15%</span></div>
-                <div className="relative h-2 bg-el rounded-full overflow-hidden"><div className="absolute top-0 right-0 h-full w-[60%] bg-gradient-to-l from-green-400 to-green-600 rounded-full"></div></div>
-                <div className="flex justify-between mt-2 text-xs text-muted"><span>0%</span><span>15%</span><span>100%</span></div>
-              </div>
-              <div className="bg-surface-alt p-5 rounded-xl border border-line group hover:border-primary/50 transition-colors">
-                <div className="flex justify-between items-start mb-4"><div><p className="text-muted text-xs font-bold uppercase tracking-wider mb-1">An toàn</p><h4 className="text-heading font-bold text-lg">Margin of Safety</h4></div><span className="px-2 py-1 rounded bg-el text-primary text-xs font-bold">&gt; 20%</span></div>
-                <div className="relative h-10 w-full pt-2"><input className="w-full h-1 bg-el rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg" max="100" min="0" type="range" defaultValue="20" /></div>
-              </div>
-              <div className="bg-surface-alt p-5 rounded-xl border border-line group hover:border-primary/50 transition-colors flex flex-col justify-center items-center text-center cursor-pointer hover:bg-card">
-                <div className="size-10 rounded-full bg-el flex items-center justify-center mb-3 group-hover:bg-primary transition-colors"><span className="material-symbols-outlined text-heading group-hover:text-white transition-colors">add</span></div>
-                <p className="text-heading font-medium">Thêm tiêu chí</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-el border border-line hover:border-primary/50 transition-all group"><span className="text-heading text-sm font-medium">Vốn hóa &gt; 1000 tỷ</span><span className="material-symbols-outlined text-muted text-sm group-hover:text-heading">close</span></button>
-              <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-el border border-line hover:border-primary/50 transition-all group"><span className="text-heading text-sm font-medium">Ngành: Bất động sản</span><span className="material-symbols-outlined text-muted text-sm group-hover:text-heading">close</span></button>
-              <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-el border border-line hover:border-primary/50 transition-all group"><span className="text-heading text-sm font-medium">P/B &lt; 2.0</span><span className="material-symbols-outlined text-muted text-sm group-hover:text-heading">close</span></button>
-            </div>
+
+        {/* ── Filter criteria ──────────────────────────────── */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-heading text-lg font-bold flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary">tune</span>Tiêu chí lọc
+            </h3>
+            <button
+              onClick={resetCriteria}
+              className="text-xs text-primary hover:text-primary-light font-bold uppercase tracking-wider"
+            >
+              Reset tất cả
+            </button>
           </div>
-          <div className="lg:col-span-4 bg-surface-alt border border-line rounded-xl p-5 flex flex-col h-full">
-            <div className="flex items-center justify-between mb-6"><h3 className="text-heading text-lg font-bold flex items-center gap-2"><span className="material-symbols-outlined text-primary">compare_arrows</span>So sánh nhanh</h3></div>
-            <div className="flex-1 flex gap-4">
-              <div className="flex-1 flex flex-col gap-3 group cursor-pointer">
-                <div className="relative bg-card border-2 border-primary/30 group-hover:border-primary rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-all">
-                  <div className="size-10 rounded-full bg-white flex items-center justify-center shadow-lg"><span className="text-black font-bold text-xs">VHM</span></div>
-                  <p className="text-heading font-bold text-lg">VHM</p><p className="text-green-400 text-xs font-bold">+2.4%</p>
-                  <div className="w-full h-[1px] bg-line my-1"></div>
-                  <div className="w-full flex justify-between text-xs"><span className="text-muted">P/E</span><span className="text-heading font-medium">6.2</span></div>
-                  <div className="w-full flex justify-between text-xs"><span className="text-muted">ROE</span><span className="text-heading font-medium">22%</span></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {/* EPS liên tục */}
+            <CriterionCard
+              label="EPS > 0 liên tục"
+              description="Lợi nhuận trên mỗi cổ phiếu dương liên tục qua nhiều năm"
+              active={toggles.eps}
+              onToggle={() => toggleCriterion('eps')}
+            >
+              <div className="flex items-center gap-3">
+                <input
+                  type="range" min={1} max={20} step={1}
+                  value={criteria.eps_consecutive_years}
+                  onChange={(e) => setCriteria(c => ({ ...c, eps_consecutive_years: +e.target.value }))}
+                  className="flex-1 h-1.5 bg-el rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
+                />
+                <span className="text-heading font-bold text-lg min-w-[3ch] text-right">{criteria.eps_consecutive_years}</span>
+                <span className="text-muted text-xs">năm</span>
+              </div>
+            </CriterionCard>
+
+            {/* P/E */}
+            <CriterionCard
+              label="P/E ≤ 15"
+              description="Tỷ số giá / thu nhập — thước đo định giá cổ phiếu"
+              active={toggles.pe}
+              onToggle={() => toggleCriterion('pe')}
+            >
+              <div className="flex items-center gap-3">
+                <input
+                  type="range" min={1} max={50} step={0.5}
+                  value={criteria.pe_max ?? 15}
+                  onChange={(e) => setCriteria(c => ({ ...c, pe_max: +e.target.value }))}
+                  className="flex-1 h-1.5 bg-el rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
+                />
+                <span className="text-heading font-bold text-lg min-w-[3ch] text-right">≤ {criteria.pe_max}</span>
+              </div>
+            </CriterionCard>
+
+            {/* P/B */}
+            <CriterionCard
+              label="P/B ≤ 1.5"
+              description="Tỷ số giá / giá trị sổ sách — đánh giá tài sản ròng"
+              active={toggles.pb}
+              onToggle={() => toggleCriterion('pb')}
+            >
+              <div className="flex items-center gap-3">
+                <input
+                  type="range" min={0.1} max={10} step={0.1}
+                  value={criteria.pb_max ?? 1.5}
+                  onChange={(e) => setCriteria(c => ({ ...c, pb_max: +e.target.value }))}
+                  className="flex-1 h-1.5 bg-el rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
+                />
+                <span className="text-heading font-bold text-lg min-w-[3ch] text-right">≤ {criteria.pb_max}</span>
+              </div>
+            </CriterionCard>
+
+            {/* Graham Number > Price */}
+            <CriterionCard
+              label="Graham Number > Giá"
+              description="Giá trị nội tại V = √(22.5 × EPS × BVPS) phải lớn hơn giá thị trường"
+              active={toggles.graham}
+              onToggle={() => toggleCriterion('graham')}
+            />
+
+            {/* Margin of Safety */}
+            <CriterionCard
+              label="Biên an toàn ≥ 20%"
+              description="(V − Price) / V — mức chênh lệch bảo vệ nhà đầu tư"
+              active={toggles.mos}
+              onToggle={() => toggleCriterion('mos')}
+            >
+              <div className="flex items-center gap-3">
+                <input
+                  type="range" min={0} max={80} step={1}
+                  value={Math.round(criteria.margin_of_safety_min * 100)}
+                  onChange={(e) => setCriteria(c => ({ ...c, margin_of_safety_min: +e.target.value / 100 }))}
+                  className="flex-1 h-1.5 bg-el rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
+                />
+                <span className="text-heading font-bold text-lg min-w-[3ch] text-right">≥ {Math.round(criteria.margin_of_safety_min * 100)}%</span>
+              </div>
+            </CriterionCard>
+          </div>
+        </div>
+
+        {/* ── Error ────────────────────────────────────────── */}
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3">
+            <span className="material-symbols-outlined text-red-400">error</span>
+            <p className="text-red-400 text-sm font-medium">{error}</p>
+          </div>
+        )}
+
+        {/* ── Results table ────────────────────────────────── */}
+        {results && (
+          <div className="bg-surface-alt border border-line rounded-xl overflow-hidden shadow-xl shadow-black/10">
+            <div className="p-5 border-b border-line flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-3">
+                <h3 className="text-heading text-lg font-bold">Kết quả lọc</h3>
+                <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-bold">
+                  {results.total} cổ phiếu
+                </span>
+                <span className="text-muted text-xs">Ngày: {results.filter_date}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-muted text-sm">Sắp xếp:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => { setSortBy(e.target.value); }}
+                  className="bg-card border-none text-heading text-sm font-medium rounded-lg focus:ring-1 focus:ring-primary py-1.5 pl-3 pr-8 cursor-pointer"
+                >
+                  <option value="margin_of_safety">Biên an toàn</option>
+                  <option value="pe">P/E thấp nhất</option>
+                  <option value="pb">P/B thấp nhất</option>
+                  <option value="graham_number">Graham Number</option>
+                  <option value="eps">EPS cao nhất</option>
+                </select>
+                <button
+                  onClick={() => setSortOrder(o => o === 'desc' ? 'asc' : 'desc')}
+                  className="p-2 text-muted hover:text-heading hover:bg-el rounded-lg transition-colors"
+                  title={sortOrder === 'desc' ? 'Giảm dần' : 'Tăng dần'}
+                >
+                  <span className="material-symbols-outlined">
+                    {sortOrder === 'desc' ? 'arrow_downward' : 'arrow_upward'}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {results.items.length === 0 ? (
+              <div className="p-12 text-center">
+                <span className="material-symbols-outlined text-4xl text-muted mb-3 block">search_off</span>
+                <p className="text-muted text-lg font-medium">Không có cổ phiếu nào thỏa mãn tiêu chí lọc</p>
+                <p className="text-muted text-sm mt-1">Thử nới lỏng một số điều kiện hoặc chọn ngày khác</p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm whitespace-nowrap">
+                    <thead className="bg-card text-muted font-medium uppercase text-xs tracking-wider">
+                      <tr>
+                        <th className="px-5 py-3">#</th>
+                        <th className="px-5 py-3">Mã CP</th>
+                        <th className="px-5 py-3">Ngành</th>
+                        <th className="px-5 py-3 text-right">Giá</th>
+                        <th className="px-5 py-3 text-right">EPS</th>
+                        <th className="px-5 py-3 text-right">BVPS</th>
+                        <th className="px-5 py-3 text-right">P/E</th>
+                        <th className="px-5 py-3 text-right">P/B</th>
+                        <th className="px-5 py-3 text-right">Graham No.</th>
+                        <th className="px-5 py-3 text-right text-primary">Biên an toàn</th>
+                        <th className="px-5 py-3 text-center">EPS+</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-line">
+                      {results.items.map((item, idx) => (
+                        <tr key={item.symbol} className="group hover:bg-card/50 transition-colors">
+                          <td className="px-5 py-3 text-muted text-xs">{(results.page - 1) * results.page_size + idx + 1}</td>
+                          <td className="px-5 py-3 font-bold text-heading group-hover:text-primary transition-colors">{item.symbol}</td>
+                          <td className="px-5 py-3 text-muted text-xs max-w-[200px] truncate">{item.gics_industry || '—'}</td>
+                          <td className="px-5 py-3 text-right text-heading font-medium">{item.close_price.toLocaleString()}</td>
+                          <td className="px-5 py-3 text-right text-heading">{item.eps.toFixed(2)}</td>
+                          <td className="px-5 py-3 text-right text-heading">{item.bvps.toFixed(2)}</td>
+                          <td className="px-5 py-3 text-right text-heading">{item.pe?.toFixed(1) ?? '—'}</td>
+                          <td className="px-5 py-3 text-right text-heading">{item.pb?.toFixed(2) ?? '—'}</td>
+                          <td className="px-5 py-3 text-right text-heading font-medium">{item.graham_number?.toFixed(1) ?? '—'}</td>
+                          <td className="px-5 py-3 text-right">
+                            {item.margin_of_safety !== null ? (
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold border ${item.margin_of_safety >= 0.3
+                                  ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                                  : item.margin_of_safety >= 0.2
+                                    ? 'bg-primary/10 text-primary border-primary/20'
+                                    : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                                }`}>
+                                {(item.margin_of_safety * 100).toFixed(1)}%
+                              </span>
+                            ) : '—'}
+                          </td>
+                          <td className="px-5 py-3 text-center">
+                            <span className="px-2 py-0.5 rounded bg-el text-heading text-xs font-bold">
+                              {item.eps_positive_years}y
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-                <button className="w-full py-1.5 text-xs font-bold text-muted hover:text-heading uppercase tracking-wider bg-card rounded hover:bg-el transition-colors">Chi tiết</button>
+
+                {/* Pagination */}
+                {results.total > results.page_size && (
+                  <div className="p-4 border-t border-line flex justify-center items-center gap-2">
+                    <button
+                      onClick={() => runFilter(page - 1)}
+                      disabled={page <= 1}
+                      className="px-3 py-1.5 rounded-lg text-sm font-medium bg-el hover:bg-card disabled:opacity-40 text-heading transition-colors"
+                    >
+                      ← Trước
+                    </button>
+                    <span className="text-muted text-sm px-3">
+                      Trang {results.page} / {Math.ceil(results.total / results.page_size)}
+                    </span>
+                    <button
+                      onClick={() => runFilter(page + 1)}
+                      disabled={page >= Math.ceil(results.total / results.page_size)}
+                      className="px-3 py-1.5 rounded-lg text-sm font-medium bg-el hover:bg-card disabled:opacity-40 text-heading transition-colors"
+                    >
+                      Sau →
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ── Empty state (before running filter) ──────────── */}
+        {!results && !loading && (
+          <div className="bg-surface-alt border border-dashed border-line rounded-xl p-12 text-center">
+            <span className="material-symbols-outlined text-5xl text-muted mb-4 block">filter_alt</span>
+            <p className="text-heading text-lg font-bold mb-2">Chưa có kết quả</p>
+            <p className="text-muted text-sm">Chọn ngày và bấm <strong>"Chạy bộ lọc"</strong> để bắt đầu sàng lọc cổ phiếu.</p>
+          </div>
+        )}
+
+        {/* ── Charts placeholder (Phase 5) ─────────────────── */}
+        {results && results.items.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="bg-surface-alt border border-line rounded-xl p-6 min-h-[300px] flex items-center justify-center">
+              <div className="text-center">
+                <span className="material-symbols-outlined text-3xl text-muted mb-2 block">scatter_plot</span>
+                <p className="text-muted text-sm font-medium">P/E vs Biên an toàn</p>
+                <p className="text-muted text-xs">{results.chart_scatter.length} data points</p>
               </div>
-              <div className="flex-1 flex flex-col gap-3 group cursor-pointer">
-                <div className="relative bg-card border-2 border-dashed border-line hover:border-primary/50 rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-all h-full min-h-[180px]">
-                  <div className="size-10 rounded-full bg-el flex items-center justify-center mb-1 group-hover:scale-110 transition-transform"><span className="material-symbols-outlined text-muted">add</span></div>
-                  <p className="text-muted text-sm text-center font-medium">Thêm mã để so sánh</p>
-                </div>
-                <button className="w-full py-1.5 text-xs font-bold text-muted opacity-50 cursor-not-allowed uppercase tracking-wider bg-card rounded">Chi tiết</button>
+            </div>
+            <div className="bg-surface-alt border border-line rounded-xl p-6 min-h-[300px] flex items-center justify-center">
+              <div className="text-center">
+                <span className="material-symbols-outlined text-3xl text-muted mb-2 block">bubble_chart</span>
+                <p className="text-muted text-sm font-medium">P/E vs P/B vs Graham Number</p>
+                <p className="text-muted text-xs">{results.chart_bubble.length} data points</p>
+              </div>
+            </div>
+            <div className="bg-surface-alt border border-line rounded-xl p-6 min-h-[300px] flex items-center justify-center">
+              <div className="text-center">
+                <span className="material-symbols-outlined text-3xl text-muted mb-2 block">donut_large</span>
+                <p className="text-muted text-sm font-medium">Phân bổ ngành</p>
+                <p className="text-muted text-xs">{results.chart_sectors.length} sectors</p>
               </div>
             </div>
           </div>
-        </div>
-        <div className="bg-surface-alt border border-line rounded-xl overflow-hidden shadow-xl shadow-black/10">
-          <div className="p-5 border-b border-line flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-3"><h3 className="text-heading text-lg font-bold">Kết quả lọc</h3><span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-bold">12 kết quả</span></div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2"><span className="text-muted text-sm">Sắp xếp:</span><select className="bg-card border-none text-heading text-sm font-medium rounded-lg focus:ring-1 focus:ring-primary py-1.5 pl-3 pr-8 cursor-pointer"><option>Tiềm năng tăng giá</option><option>Vốn hóa giảm dần</option><option>P/E thấp nhất</option></select></div>
-              <button className="p-2 text-muted hover:text-heading hover:bg-el rounded-lg transition-colors"><span className="material-symbols-outlined">download</span></button>
-              <button className="p-2 text-muted hover:text-heading hover:bg-el rounded-lg transition-colors"><span className="material-symbols-outlined">view_column</span></button>
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-card text-muted font-medium uppercase text-xs tracking-wider"><tr><th className="px-6 py-4">Mã CP</th><th className="px-6 py-4">Tên công ty</th><th className="px-6 py-4 text-right">Giá hiện tại</th><th className="px-6 py-4 text-right">Định giá thực</th><th className="px-6 py-4 text-right text-primary">Biên an toàn</th><th className="px-6 py-4 text-right">P/E</th><th className="px-6 py-4 text-right">ROE</th><th className="px-6 py-4 text-center">Hành động</th></tr></thead>
-              <tbody className="divide-y divide-line">
-                <tr className="group hover:bg-card/50 transition-colors"><td className="px-6 py-4 font-bold text-heading group-hover:text-primary transition-colors">FPT</td><td className="px-6 py-4 text-muted">CTCP FPT</td><td className="px-6 py-4 text-right text-heading font-medium">96,500</td><td className="px-6 py-4 text-right text-muted">120,000</td><td className="px-6 py-4 text-right"><div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-green-500/10 text-green-400 font-bold border border-green-500/20"><span className="material-symbols-outlined text-xs">trending_up</span>24.3%</div></td><td className="px-6 py-4 text-right text-heading">18.2</td><td className="px-6 py-4 text-right text-heading">28%</td><td className="px-6 py-4 text-center"><button className="text-muted hover:text-heading p-1 rounded hover:bg-el transition-colors"><span className="material-symbols-outlined">more_horiz</span></button></td></tr>
-                <tr className="group hover:bg-card/50 transition-colors"><td className="px-6 py-4 font-bold text-heading group-hover:text-primary transition-colors">HPG</td><td className="px-6 py-4 text-muted">Tập đoàn Hòa Phát</td><td className="px-6 py-4 text-right text-heading font-medium">28,400</td><td className="px-6 py-4 text-right text-muted">38,000</td><td className="px-6 py-4 text-right"><div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-green-500/10 text-green-400 font-bold border border-green-500/20"><span className="material-symbols-outlined text-xs">trending_up</span>33.8%</div></td><td className="px-6 py-4 text-right text-heading">12.5</td><td className="px-6 py-4 text-right text-heading">21%</td><td className="px-6 py-4 text-center"><button className="text-muted hover:text-heading p-1 rounded hover:bg-el transition-colors"><span className="material-symbols-outlined">more_horiz</span></button></td></tr>
-                <tr className="group hover:bg-card/50 transition-colors"><td className="px-6 py-4 font-bold text-heading group-hover:text-primary transition-colors">MBB</td><td className="px-6 py-4 text-muted">Ngân hàng Quân Đội</td><td className="px-6 py-4 text-right text-heading font-medium">21,100</td><td className="px-6 py-4 text-right text-muted">26,500</td><td className="px-6 py-4 text-right"><div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-yellow-500/10 text-yellow-400 font-bold border border-yellow-500/20"><span className="material-symbols-outlined text-xs">trending_flat</span>25.6%</div></td><td className="px-6 py-4 text-right text-heading">6.8</td><td className="px-6 py-4 text-right text-heading">24%</td><td className="px-6 py-4 text-center"><button className="text-muted hover:text-heading p-1 rounded hover:bg-el transition-colors"><span className="material-symbols-outlined">more_horiz</span></button></td></tr>
-                <tr className="group hover:bg-card/50 transition-colors"><td className="px-6 py-4 font-bold text-heading group-hover:text-primary transition-colors">REE</td><td className="px-6 py-4 text-muted">Cơ điện lạnh REE</td><td className="px-6 py-4 text-right text-heading font-medium">62,000</td><td className="px-6 py-4 text-right text-muted">75,000</td><td className="px-6 py-4 text-right"><div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-primary/10 text-primary font-bold border border-primary/20"><span className="material-symbols-outlined text-xs">trending_up</span>20.9%</div></td><td className="px-6 py-4 text-right text-heading">9.4</td><td className="px-6 py-4 text-right text-heading">16%</td><td className="px-6 py-4 text-center"><button className="text-muted hover:text-heading p-1 rounded hover:bg-el transition-colors"><span className="material-symbols-outlined">more_horiz</span></button></td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div className="p-4 border-t border-line flex justify-center"><button className="text-muted hover:text-heading text-sm font-medium flex items-center gap-2 transition-colors">Xem tất cả kết quả<span className="material-symbols-outlined text-sm">arrow_forward</span></button></div>
-        </div>
+        )}
+
+        {/* Footer */}
         <div className="pt-6 border-t border-line flex flex-col md:flex-row justify-between items-center text-muted text-sm">
           <p>© 2024 TopInvestment. All rights reserved.</p>
-          <div className="flex gap-4 mt-2 md:mt-0"><a className="hover:text-heading" href="#">Điều khoản</a><a className="hover:text-heading" href="#">Bảo mật</a><a className="hover:text-heading" href="#">Hỗ trợ</a></div>
         </div>
       </main>
     </div>

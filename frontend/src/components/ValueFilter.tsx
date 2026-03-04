@@ -595,14 +595,29 @@ export default function ValueFilter() {
           </div>
         )}
 
-        {/* ── Charts ───────────────────────────────────────── */}
+        {/* ── Dashboard Charts ──────────────────────────────── */}
         {results && results.items.length > 0 && (
-          <div className="space-y-6">
-            <GrahamTreemap data={results.chart_treemap} />
-            <GrahamShieldBar data={results.chart_shield} />
-            <GrahamScatter data={results.chart_scatter} />
-            <GrahamBubble data={results.chart_bubble} />
-            <div className="max-w-2xl mx-auto">
+          <div className="bg-surface-alt border border-line rounded-2xl overflow-hidden">
+            {/* Dashboard header */}
+            <div className="px-6 py-4 border-b border-line bg-sidebar flex items-center gap-3">
+              <span className="material-symbols-outlined text-primary">dashboard</span>
+              <h3 className="text-heading font-bold text-lg">Dashboard Phân Tích — Bộ lọc Benjamin Graham</h3>
+              <span className="ml-auto text-muted text-xs">{results.total} cổ phiếu đạt tiêu chí</span>
+            </div>
+
+            {/* Dashboard grid */}
+            <div className="p-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {/* Row 1: Treemap — full width hero */}
+              <div className="lg:col-span-2">
+                <GrahamTreemap data={results.chart_treemap} />
+              </div>
+
+              {/* Row 2: Shield Bar + Scatter side by side */}
+              <GrahamShieldBar data={results.chart_shield} />
+              <GrahamScatter data={results.chart_scatter} />
+
+              {/* Row 3: Bubble + Donut side by side */}
+              <GrahamBubble data={results.chart_bubble} />
               <GrahamSectorDonut data={results.chart_sectors} />
             </div>
           </div>

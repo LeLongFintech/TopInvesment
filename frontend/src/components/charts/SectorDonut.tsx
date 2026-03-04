@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-    PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend
+    PieChart, Pie, Cell, Tooltip, ResponsiveContainer
 } from 'recharts';
 
 interface SectorSlice {
@@ -71,16 +71,6 @@ export default function SectorDonut({ data }: Props) {
                         ))}
                     </Pie>
                     <Tooltip content={<CustomTooltip />} />
-                    <Legend
-                        layout="vertical"
-                        align="right"
-                        verticalAlign="middle"
-                        iconType="circle"
-                        iconSize={8}
-                        formatter={(value: string) => (
-                            <span className="text-muted text-xs">{value}</span>
-                        )}
-                    />
                 </PieChart>
             </ResponsiveContainer>
         </div>

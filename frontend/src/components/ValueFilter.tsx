@@ -19,6 +19,10 @@ interface GrahamResultItem {
   graham_number: number | null;
   margin_of_safety: number | null;
   eps_positive_years: number;
+  de_ratio: number | null;
+  current_ratio: number | null;
+  dividend_yield: number | null;
+  payout_ratio: number | null;
 }
 
 interface ScatterPoint { symbol: string; pe: number; margin_of_safety: number; }
@@ -42,6 +46,9 @@ interface FilterCriteria {
   pb_max: number | null;
   graham_gt_price: boolean;
   margin_of_safety_min: number;
+  de_max: number | null;
+  cr_min: number | null;
+  div_yield_min: number | null;
 }
 
 /* ── Default criteria (team research) ──────────────────────── */
@@ -51,6 +58,9 @@ const DEFAULT_CRITERIA: FilterCriteria = {
   pb_max: 1.5,
   graham_gt_price: true,
   margin_of_safety_min: 0.20,
+  de_max: 1.0,
+  cr_min: 2.0,
+  div_yield_min: 0.05,
 };
 
 const API_BASE = 'http://localhost:8000/api/v1';
@@ -61,6 +71,7 @@ export default function ValueFilter() {
   const [criteria, setCriteria] = useState<FilterCriteria>({ ...DEFAULT_CRITERIA });
   const [toggles, setToggles] = useState({
     eps: true, pe: true, pb: true, graham: true, mos: true,
+    de: true, cr: true, divYield: true,
   });
   const [results, setResults] = useState<FilterResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -94,6 +105,9 @@ export default function ValueFilter() {
       pb_max: toggles.pb ? criteria.pb_max : null,
       graham_gt_price: toggles.graham,
       margin_of_safety_min: toggles.mos ? criteria.margin_of_safety_min : -1.0,
+      de_max: toggles.de ? criteria.de_max : null,
+      cr_min: toggles.cr ? criteria.cr_min : null,
+      div_yield_min: toggles.divYield ? criteria.div_yield_min : null,
       sort_by: sortBy,
       sort_order: sortOrder,
       page: pageNum,
@@ -118,7 +132,7 @@ export default function ValueFilter() {
 
   const resetCriteria = () => {
     setCriteria({ ...DEFAULT_CRITERIA });
-    setToggles({ eps: true, pe: true, pb: true, graham: true, mos: true });
+    setToggles({ eps: true, pe: true, pb: true, graham: true, mos: true, de: true, cr: true, divYield: true });
   };
 
   const openStockDetail = useCallback(async (symbol: string) => {
@@ -306,6 +320,60 @@ export default function ValueFilter() {
                 <span className="text-heading font-bold text-lg min-w-[3ch] text-right">≥ {Math.round(criteria.margin_of_safety_min * 100)}%</span>
               </div>
             </CriterionCard>
+
+            {/* D/E Ratio */}
+            <CriterionCard
+              label="D/E < 1"
+              description="Nợ / Vốn chủ sở hữu — đánh giá mức độ sử dụng đòn bẩy"
+              active={toggles.de}
+              onToggle={() => toggleCriterion('de')}
+            >
+              <div className="flex items-center gap-3">
+                <input
+                  type="range" min={0.1} max={5} step={0.1}
+                  value={criteria.de_max ?? 1}
+                  onChange={(e) => setCriteria(c => ({ ...c, de_max: +e.target.value }))}
+                  className="flex-1 h-1.5 bg-el rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
+                />
+                <span className="text-heading font-bold text-lg min-w-[3ch] text-right">{'<'} {criteria.de_max}</span>
+              </div>
+            </CriterionCard>
+
+            {/* Current Ratio */}
+            <CriterionCard
+              label="CR > 2"
+              description="Tỷ số thanh toán hiện hành — khả năng trả nợ ngắn hạn"
+              active={toggles.cr}
+              onToggle={() => toggleCriterion('cr')}
+            >
+              <div className="flex items-center gap-3">
+                <input
+                  type="range" min={0.5} max={10} step={0.1}
+                  value={criteria.cr_min ?? 2}
+                  onChange={(e) => setCriteria(c => ({ ...c, cr_min: +e.target.value }))}
+                  className="flex-1 h-1.5 bg-el rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
+                />
+                <span className="text-heading font-bold text-lg min-w-[3ch] text-right">{'>'} {criteria.cr_min}</span>
+              </div>
+            </CriterionCard>
+
+            {/* Dividend Yield */}
+            <CriterionCard
+              label="Lợi suất cổ tức ≥ 5%"
+              description="DPS / Giá — lợi nhuận cổ tức trên vốn đầu tư"
+              active={toggles.divYield}
+              onToggle={() => toggleCriterion('divYield')}
+            >
+              <div className="flex items-center gap-3">
+                <input
+                  type="range" min={0} max={20} step={0.5}
+                  value={Math.round((criteria.div_yield_min ?? 0.05) * 100)}
+                  onChange={(e) => setCriteria(c => ({ ...c, div_yield_min: +e.target.value / 100 }))}
+                  className="flex-1 h-1.5 bg-el rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
+                />
+                <span className="text-heading font-bold text-lg min-w-[3ch] text-right">≥ {Math.round((criteria.div_yield_min ?? 0.05) * 100)}%</span>
+              </div>
+            </CriterionCard>
           </div>
         </div>
 
@@ -376,6 +444,10 @@ export default function ValueFilter() {
                         <th className="px-5 py-3 text-right">Graham No.</th>
                         <th className="px-5 py-3 text-right text-primary">Biên an toàn</th>
                         <th className="px-5 py-3 text-center">EPS+</th>
+                        <th className="px-5 py-3 text-right">D/E</th>
+                        <th className="px-5 py-3 text-right">CR</th>
+                        <th className="px-5 py-3 text-right">Div Yield</th>
+                        <th className="px-5 py-3 text-right">Payout</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-line">
@@ -416,6 +488,14 @@ export default function ValueFilter() {
                             <span className="px-2 py-0.5 rounded bg-el text-heading text-xs font-bold">
                               {item.eps_positive_years}y
                             </span>
+                          </td>
+                          <td className="px-5 py-3 text-right text-heading">{item.de_ratio?.toFixed(2) ?? '—'}</td>
+                          <td className="px-5 py-3 text-right text-heading">{item.current_ratio?.toFixed(2) ?? '—'}</td>
+                          <td className="px-5 py-3 text-right text-heading">
+                            {item.dividend_yield !== null ? `${(item.dividend_yield * 100).toFixed(1)}%` : '—'}
+                          </td>
+                          <td className="px-5 py-3 text-right text-heading">
+                            {item.payout_ratio !== null ? `${(item.payout_ratio * 100).toFixed(1)}%` : '—'}
                           </td>
                         </tr>
                       ))}

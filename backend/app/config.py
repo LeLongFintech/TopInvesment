@@ -4,8 +4,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    supabase_url: str = ""
-    supabase_key: str = ""
+    database_url: str = "postgresql://postgres:postgres@localhost:5432/TopInvestment"
     cors_origins: str = "http://localhost:3000"
 
     @property

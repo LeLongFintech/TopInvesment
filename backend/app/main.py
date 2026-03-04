@@ -1,16 +1,28 @@
 from contextlib import asynccontextmanager
+import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
 from app.config import get_settings
 from app.middleware.logging_middleware import LoggingMiddleware
+from app.repositories.database import get_engine
 from app.routes import canslim, dividend, stocks, value
+
+logger = logging.getLogger("topinvestment")
 
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):
-    """Startup and shutdown events."""
+    """Verify database connection on startup."""
+    engine = get_engine()
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        logger.info("✅ Database connection verified")
+    except Exception as exc:
+        logger.error("❌ Database connection failed: %s", exc)
     yield
 
 

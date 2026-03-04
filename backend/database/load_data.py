@@ -157,9 +157,9 @@ def run_pipeline():
     print("📈 Step 4: Unpivoting price + volume → market_data...")
 
     with timer("Melting price data"):
-        price_raw.columns = [to_snake_case(c) if c != "Date" else "date" for c in price_raw.columns]
+        # Only rename Date column — keep ticker symbols as-is
+        price_raw = price_raw.rename(columns={"Date": "date"})
         if "date" not in price_raw.columns:
-            # Find the date column
             date_col = [c for c in price_raw.columns if "date" in c.lower()][0]
             price_raw = price_raw.rename(columns={date_col: "date"})
 
@@ -171,7 +171,8 @@ def run_pipeline():
         price_long = price_long.dropna(subset=["close_price"])
 
     with timer("Melting volume data"):
-        volume_raw.columns = [to_snake_case(c) if c != "Date" else "date" for c in volume_raw.columns]
+        # Only rename Date column — keep ticker symbols as-is
+        volume_raw = volume_raw.rename(columns={"Date": "date"})
         if "date" not in volume_raw.columns:
             date_col = [c for c in volume_raw.columns if "date" in c.lower()][0]
             volume_raw = volume_raw.rename(columns={date_col: "date"})

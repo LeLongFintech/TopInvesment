@@ -1,10 +1,15 @@
+from collections import Counter
+
 from sqlalchemy import text
 
 from app.repositories.database import get_session
 from app.schemas.value import (
+    BubblePoint,
     GrahamFilterRequest,
     GrahamFilterResponse,
     GrahamResultItem,
+    ScatterPoint,
+    SectorSlice,
 )
 
 
@@ -34,6 +39,43 @@ class ValueService:
                 break
         return consecutive
 
+    def _build_chart_data(self, results: list[GrahamResultItem]) -> tuple:
+        """Aggregate chart data from ALL filtered results."""
+        scatter = []
+        bubble = []
+        sector_counter: Counter = Counter()
+
+        for item in results:
+            if item.pe and item.margin_of_safety is not None:
+                scatter.append(ScatterPoint(
+                    symbol=item.symbol,
+                    pe=item.pe,
+                    margin_of_safety=item.margin_of_safety,
+                ))
+
+            if item.pe and item.pb and item.graham_number:
+                bubble.append(BubblePoint(
+                    symbol=item.symbol,
+                    pe=item.pe,
+                    pb=item.pb,
+                    graham_number=item.graham_number,
+                ))
+
+            industry = item.gics_industry or "Unknown"
+            sector_counter[industry] += 1
+
+        total_stocks = len(results) or 1
+        sectors = [
+            SectorSlice(
+                industry=industry,
+                count=count,
+                percentage=round(count / total_stocks * 100, 1),
+            )
+            for industry, count in sector_counter.most_common()
+        ]
+
+        return scatter, bubble, sectors
+
     def run_filter(self, request: GrahamFilterRequest) -> GrahamFilterResponse:
         target_year = int(request.date[:4])
 
@@ -56,7 +98,6 @@ class ValueService:
             base_conditions.append("gm.margin_of_safety >= :mos_min")
             params["mos_min"] = request.margin_of_safety_min
 
-        # Always require EPS > 0 on the target date
         base_conditions.append("gm.eps > 0")
         base_conditions.append("gm.bvps > 0")
 
@@ -67,7 +108,6 @@ class ValueService:
         sort_dir = "ASC" if request.sort_order == "asc" else "DESC"
 
         with get_session() as session:
-            # Get ALL candidates passing basic criteria (no pagination yet)
             candidates = session.execute(
                 text(f"""
                     SELECT
@@ -89,7 +129,7 @@ class ValueService:
                 params,
             ).mappings().all()
 
-            # ── Step 2: Check EPS consecutive years for each candidate ─
+            # ── Step 2: Check EPS consecutive years ────────────
             results = []
             for row in candidates:
                 eps_years = self._count_eps_positive_years(
@@ -114,7 +154,10 @@ class ValueService:
                     )
                 )
 
-        # ── Step 3: Paginate in-memory ─────────────────────────
+        # ── Step 3: Build chart data from ALL results ──────────
+        chart_scatter, chart_bubble, chart_sectors = self._build_chart_data(results)
+
+        # ── Step 4: Paginate ───────────────────────────────────
         total = len(results)
         offset = (request.page - 1) * request.page_size
         page_items = results[offset:offset + request.page_size]
@@ -125,4 +168,7 @@ class ValueService:
             page=request.page,
             page_size=request.page_size,
             filter_date=request.date,
+            chart_scatter=chart_scatter,
+            chart_bubble=chart_bubble,
+            chart_sectors=chart_sectors,
         )

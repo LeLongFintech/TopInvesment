@@ -57,9 +57,38 @@ class GrahamResultItem(BaseModel):
     eps_positive_years: int = Field(0, description="Số năm EPS > 0 liên tục (ngược về quá khứ)")
 
 
+# ── Chart data models ──────────────────────────────────────────
+
+class ScatterPoint(BaseModel):
+    """Scatter Plot: P/E (X) vs Margin of Safety (Y)."""
+    symbol: str
+    pe: float
+    margin_of_safety: float
+
+
+class BubblePoint(BaseModel):
+    """Bubble Chart: P/E (X) vs P/B (Y), size = Graham Number."""
+    symbol: str
+    pe: float
+    pb: float
+    graham_number: float
+
+
+class SectorSlice(BaseModel):
+    """Donut Chart: sector allocation."""
+    industry: str
+    count: int
+    percentage: float
+
+
 class GrahamFilterResponse(BaseModel):
     items: list[GrahamResultItem] = Field(default_factory=list)
     total: int = 0
     page: int = 1
     page_size: int = 50
     filter_date: str = ""
+
+    # Chart data (computed from ALL filtered results, not just current page)
+    chart_scatter: list[ScatterPoint] = Field(default_factory=list)
+    chart_bubble: list[BubblePoint] = Field(default_factory=list)
+    chart_sectors: list[SectorSlice] = Field(default_factory=list)

@@ -31,9 +31,21 @@ class GrahamFilterRequest(BaseModel):
         le=1.0,
         description="Biên an toàn tối thiểu (0.20 = 20%)",
     )
+    de_max: float | None = Field(
+        1.0,
+        description="D/E tối đa (Graham khuyến nghị < 1)",
+    )
+    cr_min: float | None = Field(
+        2.0,
+        description="Current Ratio tối thiểu (Graham khuyến nghị > 2)",
+    )
+    div_yield_min: float | None = Field(
+        0.05,
+        description="Lợi suất cổ tức tối thiểu (0.05 = 5%)",
+    )
     sort_by: str = Field(
         "margin_of_safety",
-        description="Sắp xếp theo: margin_of_safety | pe | pb | graham_number | eps",
+        description="Sắp xếp theo: margin_of_safety | pe | pb | graham_number | eps | de_ratio | current_ratio | dividend_yield",
     )
     sort_order: str = Field(
         "desc",
@@ -55,6 +67,10 @@ class GrahamResultItem(BaseModel):
     graham_number: float | None = Field(None, description="V = √(22.5 × EPS × BVPS)")
     margin_of_safety: float | None = Field(None, description="(V - Price) / V")
     eps_positive_years: int = Field(0, description="Số năm EPS > 0 liên tục (ngược về quá khứ)")
+    de_ratio: float | None = Field(None, description="Nợ / Vốn chủ sở hữu")
+    current_ratio: float | None = Field(None, description="Tỷ số thanh toán hiện hành")
+    dividend_yield: float | None = Field(None, description="Lợi suất cổ tức")
+    payout_ratio: float | None = Field(None, description="Tỷ lệ chi trả cổ tức")
 
 
 # ── Chart data models ──────────────────────────────────────────
@@ -103,6 +119,8 @@ class StockHistoryPoint(BaseModel):
     pe: float | None = None
     pb: float | None = None
     margin_of_safety: float | None = None
+    de_ratio: float | None = None
+    current_ratio: float | None = None
 
 
 class StockDetailResponse(BaseModel):

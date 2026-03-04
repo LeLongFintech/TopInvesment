@@ -100,12 +100,27 @@ class ValueService:
             base_conditions.append("gm.margin_of_safety >= :mos_min")
             params["mos_min"] = request.margin_of_safety_min
 
+        if request.de_max is not None:
+            base_conditions.append("gm.de_ratio IS NOT NULL AND gm.de_ratio <= :de_max")
+            params["de_max"] = request.de_max
+
+        if request.cr_min is not None:
+            base_conditions.append("gm.current_ratio IS NOT NULL AND gm.current_ratio >= :cr_min")
+            params["cr_min"] = request.cr_min
+
+        if request.div_yield_min is not None:
+            base_conditions.append("gm.dividend_yield IS NOT NULL AND gm.dividend_yield >= :div_yield_min")
+            params["div_yield_min"] = request.div_yield_min
+
         base_conditions.append("gm.eps > 0")
         base_conditions.append("gm.bvps > 0")
 
         where_clause = " AND ".join(base_conditions)
 
-        allowed_sort = {"margin_of_safety", "pe", "pb", "graham_number", "eps", "bvps"}
+        allowed_sort = {
+            "margin_of_safety", "pe", "pb", "graham_number", "eps", "bvps",
+            "de_ratio", "current_ratio", "dividend_yield", "payout_ratio",
+        }
         sort_col = request.sort_by if request.sort_by in allowed_sort else "margin_of_safety"
         sort_dir = "ASC" if request.sort_order == "asc" else "DESC"
 
@@ -122,7 +137,11 @@ class ValueService:
                         gm.pe,
                         gm.pb,
                         gm.graham_number,
-                        gm.margin_of_safety
+                        gm.margin_of_safety,
+                        gm.de_ratio,
+                        gm.current_ratio,
+                        gm.dividend_yield,
+                        gm.payout_ratio
                     FROM graham_metrics gm
                     LEFT JOIN stocks s ON gm.symbol = s.symbol
                     WHERE {where_clause}
@@ -153,6 +172,10 @@ class ValueService:
                         graham_number=round(float(row["graham_number"]), 2) if row["graham_number"] else None,
                         margin_of_safety=round(float(row["margin_of_safety"]), 4) if row["margin_of_safety"] else None,
                         eps_positive_years=eps_years,
+                        de_ratio=round(float(row["de_ratio"]), 4) if row["de_ratio"] is not None else None,
+                        current_ratio=round(float(row["current_ratio"]), 4) if row["current_ratio"] is not None else None,
+                        dividend_yield=round(float(row["dividend_yield"]), 4) if row["dividend_yield"] is not None else None,
+                        payout_ratio=round(float(row["payout_ratio"]), 4) if row["payout_ratio"] is not None else None,
                     )
                 )
 
@@ -191,7 +214,8 @@ class ValueService:
                 text("""
                     SELECT
                         date, close_price, graham_number,
-                        pe, pb, margin_of_safety
+                        pe, pb, margin_of_safety,
+                        de_ratio, current_ratio
                     FROM graham_metrics
                     WHERE symbol = :symbol
                       AND date >= CURRENT_DATE - INTERVAL ':years years'
@@ -211,6 +235,8 @@ class ValueService:
                     pe=round(float(r["pe"]), 2) if r["pe"] else None,
                     pb=round(float(r["pb"]), 2) if r["pb"] else None,
                     margin_of_safety=round(float(r["margin_of_safety"]), 4) if r["margin_of_safety"] else None,
+                    de_ratio=round(float(r["de_ratio"]), 4) if r["de_ratio"] is not None else None,
+                    current_ratio=round(float(r["current_ratio"]), 4) if r["current_ratio"] is not None else None,
                 )
                 for r in sampled
             ]

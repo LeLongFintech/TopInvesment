@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import GrahamScatter from './charts/graham/GrahamScatter';
 import GrahamBubble from './charts/graham/GrahamBubble';
 import GrahamSectorDonut from './charts/graham/GrahamSectorDonut';
+import DatePicker from './ui/DatePicker';
 
 /* ── Types ─────────────────────────────────────────────────── */
 interface GrahamResultItem {
@@ -166,13 +167,12 @@ export default function ValueFilter() {
               </p>
             </div>
             <div className="flex items-center gap-3 shrink-0">
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1.5">
                 <label className="text-muted text-xs font-medium uppercase tracking-wider">Ngày lấy danh mục</label>
-                <input
-                  type="date"
+                <DatePicker
                   value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="h-10 px-3 rounded-lg bg-card border border-line text-heading text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                  onChange={setSelectedDate}
+                  placeholder="Chọn ngày lấy danh mục..."
                 />
               </div>
               <button

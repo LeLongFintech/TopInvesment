@@ -15,25 +15,15 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const { isDark, toggleTheme } = useTheme();
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return <Dashboard />;
-      case 'canslim':
-        return <CanslimFilter />;
-      case 'value':
-        return <ValueFilter />;
-      case 'dividend':
-        return <DividendFilter />;
-      default:
-        return <Dashboard />;
-    }
-  };
-
   return (
     <div className="flex h-screen w-full overflow-hidden bg-page font-display text-body antialiased relative">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      {renderContent()}
+
+      {/* All tabs stay mounted — hidden via CSS to preserve state */}
+      <div className={activeTab === 'dashboard' ? 'flex flex-1 overflow-hidden' : 'hidden'}><Dashboard /></div>
+      <div className={activeTab === 'canslim' ? 'flex flex-1 overflow-hidden' : 'hidden'}><CanslimFilter /></div>
+      <div className={activeTab === 'value' ? 'flex flex-1 overflow-hidden' : 'hidden'}><ValueFilter /></div>
+      <div className={activeTab === 'dividend' ? 'flex flex-1 overflow-hidden' : 'hidden'}><DividendFilter /></div>
 
       {/* Theme Toggle — Fixed top-right */}
       <button

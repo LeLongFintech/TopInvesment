@@ -2,6 +2,8 @@ import React, { useState, useCallback } from 'react';
 import GrahamScatter from './charts/graham/GrahamScatter';
 import GrahamBubble from './charts/graham/GrahamBubble';
 import GrahamSectorDonut from './charts/graham/GrahamSectorDonut';
+import GrahamPriceVsValue from './charts/graham/GrahamPriceVsValue';
+import GrahamHistoricalBands from './charts/graham/GrahamHistoricalBands';
 import DatePicker from './ui/DatePicker';
 
 /* ── Types ─────────────────────────────────────────────────── */
@@ -67,6 +69,11 @@ export default function ValueFilter() {
   const [sortOrder, setSortOrder] = useState('desc');
   const [page, setPage] = useState(1);
 
+  // Stock detail drill-down
+  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+  const [detailData, setDetailData] = useState<any>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
   const canRun = selectedDate.length > 0;
 
   /* ── Handlers ────────────────────────────────────────────── */
@@ -113,6 +120,18 @@ export default function ValueFilter() {
     setCriteria({ ...DEFAULT_CRITERIA });
     setToggles({ eps: true, pe: true, pb: true, graham: true, mos: true });
   };
+
+  const openStockDetail = useCallback(async (symbol: string) => {
+    if (selectedSymbol === symbol) { setSelectedSymbol(null); setDetailData(null); return; }
+    setSelectedSymbol(symbol);
+    setDetailLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/filters/value/stock/${encodeURIComponent(symbol)}?years=5`);
+      if (!res.ok) throw new Error('Failed to load detail');
+      setDetailData(await res.json());
+    } catch { setDetailData(null); }
+    finally { setDetailLoading(false); }
+  }, [selectedSymbol]);
 
   /* ── Criterion card ──────────────────────────────────────── */
   const CriterionCard = ({
@@ -361,9 +380,19 @@ export default function ValueFilter() {
                     </thead>
                     <tbody className="divide-y divide-line">
                       {results.items.map((item, idx) => (
-                        <tr key={item.symbol} className="group hover:bg-card/50 transition-colors">
+                        <tr
+                          key={item.symbol}
+                          onClick={() => openStockDetail(item.symbol)}
+                          className={`group hover:bg-card/50 transition-colors cursor-pointer ${selectedSymbol === item.symbol ? 'bg-primary/5 ring-1 ring-primary/30' : ''
+                            }`}
+                        >
                           <td className="px-5 py-3 text-muted text-xs">{(results.page - 1) * results.page_size + idx + 1}</td>
-                          <td className="px-5 py-3 font-bold text-heading group-hover:text-primary transition-colors">{item.symbol}</td>
+                          <td className="px-5 py-3 font-bold text-heading group-hover:text-primary transition-colors">
+                            <span className="flex items-center gap-1">
+                              {item.symbol}
+                              {selectedSymbol === item.symbol && <span className="material-symbols-outlined text-primary text-sm">expand_more</span>}
+                            </span>
+                          </td>
                           <td className="px-5 py-3 text-muted text-xs max-w-[200px] truncate">{item.gics_industry || '—'}</td>
                           <td className="px-5 py-3 text-right text-heading font-medium">{item.close_price.toLocaleString()}</td>
                           <td className="px-5 py-3 text-right text-heading">{item.eps.toFixed(2)}</td>
@@ -418,6 +447,56 @@ export default function ValueFilter() {
                 )}
               </>
             )}
+          </div>
+        )}
+        {/* ── Stock Detail Modal ──────────────────────────── */}
+        {selectedSymbol && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 lg:p-8">
+            {/* Backdrop */}
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => { setSelectedSymbol(null); setDetailData(null); }}
+            />
+            {/* Modal content */}
+            <div className="relative w-full max-w-5xl max-h-[90vh] bg-page border border-line rounded-2xl shadow-2xl shadow-black/30 overflow-hidden flex flex-col">
+              {/* Modal header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-line bg-sidebar shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-primary">insights</span>
+                  </div>
+                  <div>
+                    <h3 className="text-heading font-bold text-lg">{selectedSymbol}</h3>
+                    <p className="text-muted text-xs">{detailData?.gics_industry || 'Đang tải...'}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setSelectedSymbol(null); setDetailData(null); }}
+                  className="size-9 rounded-lg bg-el hover:bg-red-500/20 flex items-center justify-center text-muted hover:text-red-400 transition-colors"
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+              {/* Modal body */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {detailLoading ? (
+                  <div className="flex items-center justify-center py-20">
+                    <span className="material-symbols-outlined animate-spin text-4xl text-primary">progress_activity</span>
+                    <span className="text-muted ml-3 text-lg">Đang tải dữ liệu lịch sử...</span>
+                  </div>
+                ) : detailData?.history?.length ? (
+                  <>
+                    <GrahamPriceVsValue data={detailData.history} symbol={selectedSymbol} />
+                    <GrahamHistoricalBands data={detailData.history} symbol={selectedSymbol} />
+                  </>
+                ) : (
+                  <div className="text-center py-20">
+                    <span className="material-symbols-outlined text-4xl text-muted mb-3 block">info</span>
+                    <p className="text-muted text-lg">Không có dữ liệu lịch sử cho mã này</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 

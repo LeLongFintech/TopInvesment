@@ -92,3 +92,21 @@ class GrahamFilterResponse(BaseModel):
     chart_scatter: list[ScatterPoint] = Field(default_factory=list)
     chart_bubble: list[BubblePoint] = Field(default_factory=list)
     chart_sectors: list[SectorSlice] = Field(default_factory=list)
+
+
+# ── Stock detail (drill-down) ──────────────────────────────
+
+class StockHistoryPoint(BaseModel):
+    date: str
+    close_price: float
+    graham_number: float | None = None
+    pe: float | None = None
+    pb: float | None = None
+    margin_of_safety: float | None = None
+
+
+class StockDetailResponse(BaseModel):
+    symbol: str
+    gics_industry: str | None = None
+    history: list[StockHistoryPoint] = Field(default_factory=list)
+

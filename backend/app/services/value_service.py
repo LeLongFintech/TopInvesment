@@ -10,6 +10,8 @@ from app.schemas.value import (
     GrahamResultItem,
     ScatterPoint,
     SectorSlice,
+    StockDetailResponse,
+    StockHistoryPoint,
 )
 
 
@@ -171,4 +173,50 @@ class ValueService:
             chart_scatter=chart_scatter,
             chart_bubble=chart_bubble,
             chart_sectors=chart_sectors,
+        )
+
+    def get_stock_history(self, symbol: str, years: int = 5) -> StockDetailResponse:
+        """Get historical Graham metrics for a specific stock."""
+        with get_session() as session:
+            # Get industry
+            industry_row = session.execute(
+                text("SELECT gics_industry FROM stocks WHERE symbol = :symbol"),
+                {"symbol": symbol},
+            ).mappings().first()
+
+            gics_industry = industry_row["gics_industry"] if industry_row else None
+
+            # Get historical data — sample weekly to avoid too many points
+            rows = session.execute(
+                text("""
+                    SELECT
+                        date, close_price, graham_number,
+                        pe, pb, margin_of_safety
+                    FROM graham_metrics
+                    WHERE symbol = :symbol
+                      AND date >= CURRENT_DATE - INTERVAL ':years years'
+                    ORDER BY date
+                """.replace(":years years", f"{years} years")),
+                {"symbol": symbol},
+            ).mappings().all()
+
+            # Sample: take every 5th row for performance (~weekly)
+            sampled = rows[::5] if len(rows) > 500 else rows
+
+            history = [
+                StockHistoryPoint(
+                    date=str(r["date"]),
+                    close_price=round(float(r["close_price"]), 2),
+                    graham_number=round(float(r["graham_number"]), 2) if r["graham_number"] else None,
+                    pe=round(float(r["pe"]), 2) if r["pe"] else None,
+                    pb=round(float(r["pb"]), 2) if r["pb"] else None,
+                    margin_of_safety=round(float(r["margin_of_safety"]), 4) if r["margin_of_safety"] else None,
+                )
+                for r in sampled
+            ]
+
+        return StockDetailResponse(
+            symbol=symbol,
+            gics_industry=gics_industry,
+            history=history,
         )

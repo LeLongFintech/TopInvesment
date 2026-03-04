@@ -2,6 +2,8 @@ import React, { useState, useCallback } from 'react';
 import GrahamScatter from './charts/graham/GrahamScatter';
 import GrahamBubble from './charts/graham/GrahamBubble';
 import GrahamSectorDonut from './charts/graham/GrahamSectorDonut';
+import GrahamTreemap from './charts/graham/GrahamTreemap';
+import GrahamShieldBar from './charts/graham/GrahamShieldBar';
 import GrahamPriceVsValue from './charts/graham/GrahamPriceVsValue';
 import GrahamHistoricalBands from './charts/graham/GrahamHistoricalBands';
 import DatePicker from './ui/DatePicker';
@@ -28,6 +30,8 @@ interface GrahamResultItem {
 interface ScatterPoint { symbol: string; pe: number; margin_of_safety: number; }
 interface BubblePoint { symbol: string; pe: number; pb: number; graham_number: number; }
 interface SectorSlice { industry: string; count: number; percentage: number; }
+interface TreemapItem { symbol: string; industry: string; close_price: number; pe: number; }
+interface ShieldItem { symbol: string; current_ratio: number; de_ratio: number; }
 
 interface FilterResponse {
   items: GrahamResultItem[];
@@ -38,6 +42,8 @@ interface FilterResponse {
   chart_scatter: ScatterPoint[];
   chart_bubble: BubblePoint[];
   chart_sectors: SectorSlice[];
+  chart_treemap: TreemapItem[];
+  chart_shield: ShieldItem[];
 }
 
 interface FilterCriteria {
@@ -592,6 +598,8 @@ export default function ValueFilter() {
         {/* ── Charts ───────────────────────────────────────── */}
         {results && results.items.length > 0 && (
           <div className="space-y-6">
+            <GrahamTreemap data={results.chart_treemap} />
+            <GrahamShieldBar data={results.chart_shield} />
             <GrahamScatter data={results.chart_scatter} />
             <GrahamBubble data={results.chart_bubble} />
             <div className="max-w-2xl mx-auto">

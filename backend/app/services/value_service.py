@@ -10,8 +10,10 @@ from app.schemas.value import (
     GrahamResultItem,
     ScatterPoint,
     SectorSlice,
+    ShieldItem,
     StockDetailResponse,
     StockHistoryPoint,
+    TreemapItem,
 )
 
 
@@ -76,7 +78,34 @@ class ValueService:
             for industry, count in sector_counter.most_common()
         ]
 
-        return scatter, bubble, sectors
+        # Treemap: symbol, industry, close_price (size), pe (color)
+        treemap = [
+            TreemapItem(
+                symbol=item.symbol,
+                industry=item.gics_industry or "Unknown",
+                close_price=item.close_price,
+                pe=item.pe,
+            )
+            for item in results
+            if item.pe and item.pe > 0
+        ]
+
+        # Shield: top 15 by current_ratio (descending), with CR + D/E
+        shield_candidates = [
+            item for item in results
+            if item.current_ratio is not None and item.de_ratio is not None
+        ]
+        shield_candidates.sort(key=lambda x: x.current_ratio or 0, reverse=True)
+        shield = [
+            ShieldItem(
+                symbol=item.symbol,
+                current_ratio=round(item.current_ratio, 2),
+                de_ratio=round(item.de_ratio, 2),
+            )
+            for item in shield_candidates[:15]
+        ]
+
+        return scatter, bubble, sectors, treemap, shield
 
     def run_filter(self, request: GrahamFilterRequest) -> GrahamFilterResponse:
         target_year = int(request.date[:4])
@@ -180,7 +209,7 @@ class ValueService:
                 )
 
         # ── Step 3: Build chart data from ALL results ──────────
-        chart_scatter, chart_bubble, chart_sectors = self._build_chart_data(results)
+        chart_scatter, chart_bubble, chart_sectors, chart_treemap, chart_shield = self._build_chart_data(results)
 
         # ── Step 4: Paginate ───────────────────────────────────
         total = len(results)
@@ -196,6 +225,8 @@ class ValueService:
             chart_scatter=chart_scatter,
             chart_bubble=chart_bubble,
             chart_sectors=chart_sectors,
+            chart_treemap=chart_treemap,
+            chart_shield=chart_shield,
         )
 
     def get_stock_history(self, symbol: str, years: int = 5) -> StockDetailResponse:

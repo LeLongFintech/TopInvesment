@@ -97,6 +97,21 @@ class SectorSlice(BaseModel):
     percentage: float
 
 
+class TreemapItem(BaseModel):
+    """Treemap: industry valuation heatmap."""
+    symbol: str
+    industry: str
+    close_price: float
+    pe: float
+
+
+class ShieldItem(BaseModel):
+    """Shield Bar: CR + D/E for top stocks."""
+    symbol: str
+    current_ratio: float
+    de_ratio: float
+
+
 class GrahamFilterResponse(BaseModel):
     items: list[GrahamResultItem] = Field(default_factory=list)
     total: int = 0
@@ -108,6 +123,8 @@ class GrahamFilterResponse(BaseModel):
     chart_scatter: list[ScatterPoint] = Field(default_factory=list)
     chart_bubble: list[BubblePoint] = Field(default_factory=list)
     chart_sectors: list[SectorSlice] = Field(default_factory=list)
+    chart_treemap: list[TreemapItem] = Field(default_factory=list)
+    chart_shield: list[ShieldItem] = Field(default_factory=list)
 
 
 # ── Stock detail (drill-down) ──────────────────────────────

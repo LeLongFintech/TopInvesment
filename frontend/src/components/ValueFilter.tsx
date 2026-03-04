@@ -1,4 +1,7 @@
 import React, { useState, useCallback } from 'react';
+import ValuationScatter from './charts/ValuationScatter';
+import ValuationBubble from './charts/ValuationBubble';
+import SectorDonut from './charts/SectorDonut';
 
 /* ── Types ─────────────────────────────────────────────────── */
 interface GrahamResultItem {
@@ -176,8 +179,8 @@ export default function ValueFilter() {
                 onClick={() => runFilter(1)}
                 disabled={!canRun || loading}
                 className={`flex items-center gap-2 h-10 px-6 rounded-lg text-white font-bold text-sm transition-all mt-5 ${canRun && !loading
-                    ? 'bg-primary hover:bg-primary-dark shadow-lg shadow-primary/20 cursor-pointer'
-                    : 'bg-gray-500 opacity-50 cursor-not-allowed'
+                  ? 'bg-primary hover:bg-primary-dark shadow-lg shadow-primary/20 cursor-pointer'
+                  : 'bg-gray-500 opacity-50 cursor-not-allowed'
                   }`}
               >
                 {loading ? (
@@ -371,10 +374,10 @@ export default function ValueFilter() {
                           <td className="px-5 py-3 text-right">
                             {item.margin_of_safety !== null ? (
                               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold border ${item.margin_of_safety >= 0.3
-                                  ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                                  : item.margin_of_safety >= 0.2
-                                    ? 'bg-primary/10 text-primary border-primary/20'
-                                    : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                                ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                                : item.margin_of_safety >= 0.2
+                                  ? 'bg-primary/10 text-primary border-primary/20'
+                                  : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
                                 }`}>
                                 {(item.margin_of_safety * 100).toFixed(1)}%
                               </span>
@@ -427,29 +430,15 @@ export default function ValueFilter() {
           </div>
         )}
 
-        {/* ── Charts placeholder (Phase 5) ─────────────────── */}
+        {/* ── Charts ───────────────────────────────────────── */}
         {results && results.items.length > 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="bg-surface-alt border border-line rounded-xl p-6 min-h-[300px] flex items-center justify-center">
-              <div className="text-center">
-                <span className="material-symbols-outlined text-3xl text-muted mb-2 block">scatter_plot</span>
-                <p className="text-muted text-sm font-medium">P/E vs Biên an toàn</p>
-                <p className="text-muted text-xs">{results.chart_scatter.length} data points</p>
-              </div>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ValuationScatter data={results.chart_scatter} />
+              <ValuationBubble data={results.chart_bubble} />
             </div>
-            <div className="bg-surface-alt border border-line rounded-xl p-6 min-h-[300px] flex items-center justify-center">
-              <div className="text-center">
-                <span className="material-symbols-outlined text-3xl text-muted mb-2 block">bubble_chart</span>
-                <p className="text-muted text-sm font-medium">P/E vs P/B vs Graham Number</p>
-                <p className="text-muted text-xs">{results.chart_bubble.length} data points</p>
-              </div>
-            </div>
-            <div className="bg-surface-alt border border-line rounded-xl p-6 min-h-[300px] flex items-center justify-center">
-              <div className="text-center">
-                <span className="material-symbols-outlined text-3xl text-muted mb-2 block">donut_large</span>
-                <p className="text-muted text-sm font-medium">Phân bổ ngành</p>
-                <p className="text-muted text-xs">{results.chart_sectors.length} sectors</p>
-              </div>
+            <div className="max-w-lg mx-auto">
+              <SectorDonut data={results.chart_sectors} />
             </div>
           </div>
         )}

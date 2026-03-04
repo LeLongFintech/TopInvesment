@@ -191,6 +191,9 @@ def run_pipeline():
             how="outer",
         )
 
+    with timer("Sorting by symbol → date"):
+        market_data = market_data.sort_values(["symbol", "date"]).reset_index(drop=True)
+
     print(f"  📏 market_data rows: {len(market_data):,}")
 
     with timer(f"Inserting market_data ({len(market_data):,} rows)"):

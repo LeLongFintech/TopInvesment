@@ -57,7 +57,7 @@ export default function GrahamScatter({ data }: Props) {
             <p className="text-muted text-xs mb-4">
                 Góc <strong>trên-trái</strong> = "Siêu cổ phiếu" (P/E thấp + Biên an toàn cao)
             </p>
-            <ResponsiveContainer width="100%" height={350}>
+            <ResponsiveContainer width="100%" height={450}>
                 <ScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--color-line, #333)" opacity={0.5} />
                     <XAxis
@@ -80,7 +80,7 @@ export default function GrahamScatter({ data }: Props) {
                     </YAxis>
                     <Tooltip content={<CustomTooltip />} />
                     <ReferenceLine y={20} stroke="#eab308" strokeDasharray="4 4" label={{ value: '20%', fill: '#eab308', fontSize: 10 }} />
-                    <Scatter data={formatted} fillOpacity={0.8}>
+                    <Scatter data={formatted} fillOpacity={0.9}>
                         {formatted.map((entry, idx) => (
                             <Cell key={idx} fill={getColor(entry.margin_of_safety)} />
                         ))}

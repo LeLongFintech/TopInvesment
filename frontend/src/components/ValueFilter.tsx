@@ -433,11 +433,9 @@ export default function ValueFilter() {
         {/* ── Charts ───────────────────────────────────────── */}
         {results && results.items.length > 0 && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <GrahamScatter data={results.chart_scatter} />
-              <GrahamBubble data={results.chart_bubble} />
-            </div>
-            <div className="max-w-lg mx-auto">
+            <GrahamScatter data={results.chart_scatter} />
+            <GrahamBubble data={results.chart_bubble} />
+            <div className="max-w-2xl mx-auto">
               <GrahamSectorDonut data={results.chart_sectors} />
             </div>
           </div>

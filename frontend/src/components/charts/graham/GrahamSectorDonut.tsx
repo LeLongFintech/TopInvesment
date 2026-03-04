@@ -47,14 +47,14 @@ export default function GrahamSectorDonut({ data }: Props) {
             <p className="text-muted text-xs mb-4">
                 Cơ cấu ngành của các cổ phiếu vượt qua bộ lọc Graham
             </p>
-            <ResponsiveContainer width="100%" height={350}>
+            <ResponsiveContainer width="100%" height={400}>
                 <PieChart>
                     <Pie
                         data={data}
                         cx="50%"
                         cy="50%"
-                        innerRadius={70}
-                        outerRadius={120}
+                        innerRadius={85}
+                        outerRadius={150}
                         paddingAngle={2}
                         dataKey="count"
                         nameKey="industry"

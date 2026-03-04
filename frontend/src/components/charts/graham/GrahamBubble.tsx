@@ -49,7 +49,7 @@ export default function GrahamBubble({ data }: Props) {
             <p className="text-muted text-xs mb-4">
                 Góc <strong>dưới-trái</strong> = Định giá thấp. Bong bóng <strong>to</strong> = Graham Number cao
             </p>
-            <ResponsiveContainer width="100%" height={350}>
+            <ResponsiveContainer width="100%" height={450}>
                 <ScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--color-line, #333)" opacity={0.5} />
                     <XAxis
@@ -73,7 +73,7 @@ export default function GrahamBubble({ data }: Props) {
                     <ZAxis
                         type="number"
                         dataKey="graham_number"
-                        range={[40, 400]}
+                        range={[60, 600]}
                         name="Graham Number"
                     />
                     <Tooltip content={<CustomTooltip />} />

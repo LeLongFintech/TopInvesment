@@ -6,13 +6,17 @@ Usage:
     cd backend
     python -m database.compute_graham
 
-Computes 6 key metrics for the Benjamin Graham value filter:
+Computes 10 key metrics for the Benjamin Graham value filter:
 1. EPS  — from income_statement
 2. BVPS — shareholders_equity / shares_outstanding (balance_sheet)
 3. P/E  — close_price / EPS
 4. P/B  — close_price / BVPS
 5. Graham Number (V) — sqrt(22.5 × EPS × BVPS)
 6. Margin of Safety — (V - close_price) / V
+7. D/E  — debt_total / common_equity_total (balance_sheet)
+8. Current Ratio — total_current_assets / total_current_liabilities (balance_sheet)
+9. Dividend Yield — DPS / close_price
+10. Payout Ratio — dividends / net_income
 
 Results are stored in the `graham_metrics` table for fast querying.
 """
@@ -59,7 +63,9 @@ def run_pipeline():
             SELECT
                 symbol,
                 date,
-                eps_basic_incl_extraordinary_items_common_total AS eps
+                eps_basic_incl_extraordinary_items_common_total AS eps,
+                shares_used_to_calculate_basic_eps_total AS shares_eps,
+                net_income_after_tax
             FROM income_statement
             WHERE eps_basic_incl_extraordinary_items_common_total IS NOT NULL
               AND eps_basic_incl_extraordinary_items_common_total != 0
@@ -69,15 +75,19 @@ def run_pipeline():
         )
     print(f"    → {len(eps_df):,} rows")
 
-    # ── Step 2: Compute BVPS from balance_sheet ────────────────
-    with timer("Computing BVPS from balance_sheet"):
+    # ── Step 2: Compute BVPS + D/E + CR from balance_sheet ─────
+    with timer("Computing BVPS, D/E, CR from balance_sheet"):
         bvps_df = pd.read_sql(
             """
             SELECT
                 symbol,
                 date,
                 shareholders_equity_attributable_to_parent_shhold_total AS equity,
-                common_shares_outstanding_total AS shares
+                common_shares_outstanding_total AS shares,
+                debt_total,
+                common_equity_total,
+                total_current_assets,
+                total_current_liabilities
             FROM balance_sheet
             WHERE common_shares_outstanding_total IS NOT NULL
               AND common_shares_outstanding_total > 0
@@ -86,12 +96,48 @@ def run_pipeline():
             engine,
         )
         bvps_df["bvps"] = bvps_df["equity"] / bvps_df["shares"]
-        bvps_df = bvps_df[["symbol", "date", "bvps"]]
+
+        # D/E = debt_total / common_equity_total
+        bvps_df["de_ratio"] = bvps_df.apply(
+            lambda r: round(float(r["debt_total"]) / float(r["common_equity_total"]), 4)
+            if r["common_equity_total"] and float(r["common_equity_total"]) > 0
+               and r["debt_total"] is not None
+            else None,
+            axis=1,
+        )
+
+        # Current Ratio = total_current_assets / total_current_liabilities
+        bvps_df["current_ratio"] = bvps_df.apply(
+            lambda r: round(float(r["total_current_assets"]) / float(r["total_current_liabilities"]), 4)
+            if r["total_current_liabilities"] and float(r["total_current_liabilities"]) > 0
+               and r["total_current_assets"] is not None
+            else None,
+            axis=1,
+        )
+
+        bvps_df = bvps_df[["symbol", "date", "bvps", "de_ratio", "current_ratio"]]
     print(f"    → {len(bvps_df):,} rows")
 
-    # ── Step 3: Merge EPS + BVPS (by symbol + year) ────────────
-    with timer("Merging EPS + BVPS"):
+    # ── Step 2b: Extract dividends from cash_flow ──────────────
+    with timer("Extracting dividends from cash_flow"):
+        div_df = pd.read_sql(
+            """
+            SELECT
+                symbol,
+                date,
+                dividends_common_cash_paid
+            FROM cash_flow
+            WHERE dividends_common_cash_paid IS NOT NULL
+            ORDER BY symbol, date
+            """,
+            engine,
+        )
+    print(f"    → {len(div_df):,} rows")
+
+    # ── Step 3: Merge EPS + BVPS + Dividends (by symbol + year)
+    with timer("Merging EPS + BVPS + Dividends"):
         fundamentals = eps_df.merge(bvps_df, on=["symbol", "date"], how="inner")
+        fundamentals = fundamentals.merge(div_df, on=["symbol", "date"], how="left")
     print(f"    → {len(fundamentals):,} rows")
 
     # ── Step 4: Get close_price from market_data ───────────────
@@ -112,31 +158,31 @@ def run_pipeline():
     print(f"    → {len(price_df):,} rows")
 
     # ── Step 5: Match price to fundamentals by year ────────────
-    #   For each price row, find the fundamental data from the
-    #   same year (annual financial report).
     with timer("Matching price dates to annual fundamentals"):
-        # Extract year from both DataFrames
         price_df["year"] = pd.to_datetime(price_df["date"]).dt.year
         fundamentals["year"] = pd.to_datetime(fundamentals["date"]).dt.year
-
-        # Rename fundamental date to avoid collision
         fundamentals = fundamentals.rename(columns={"date": "report_date"})
 
-        # Merge: each daily price row gets the EPS/BVPS of that year
+        merge_cols = [
+            "symbol", "year", "eps", "bvps",
+            "de_ratio", "current_ratio",
+            "shares_eps", "net_income_after_tax",
+            "dividends_common_cash_paid",
+            "report_date",
+        ]
         merged = price_df.merge(
-            fundamentals[["symbol", "year", "eps", "bvps", "report_date"]],
+            fundamentals[merge_cols],
             on=["symbol", "year"],
             how="inner",
         )
     print(f"    → {len(merged):,} matched rows")
 
     # ── Step 6: Compute Graham metrics ─────────────────────────
-    with timer("Computing P/E, P/B, Graham Number, Margin of Safety"):
+    with timer("Computing all Graham metrics"):
         merged["pe"] = merged["close_price"] / merged["eps"]
         merged["pb"] = merged["close_price"] / merged["bvps"]
 
         # Graham Number: V = sqrt(22.5 × EPS × BVPS)
-        # Only valid when both EPS > 0 and BVPS > 0
         merged["graham_number"] = merged.apply(
             lambda row: math.sqrt(22.5 * row["eps"] * row["bvps"])
             if row["eps"] > 0 and row["bvps"] > 0
@@ -152,12 +198,34 @@ def run_pipeline():
             axis=1,
         )
 
+        # DPS = dividends_common_cash_paid / shares_used_to_calculate_basic_eps_total
+        # Dividend Yield = DPS / close_price
+        merged["dividend_yield"] = merged.apply(
+            lambda row: abs(float(row["dividends_common_cash_paid"])) / float(row["shares_eps"]) / row["close_price"]
+            if row["dividends_common_cash_paid"] is not None
+               and row["shares_eps"] and float(row["shares_eps"]) > 0
+               and row["close_price"] > 0
+            else None,
+            axis=1,
+        )
+
+        # Payout Ratio = dividends / net_income
+        merged["payout_ratio"] = merged.apply(
+            lambda row: abs(float(row["dividends_common_cash_paid"])) / float(row["net_income_after_tax"])
+            if row["dividends_common_cash_paid"] is not None
+               and row["net_income_after_tax"] and float(row["net_income_after_tax"]) > 0
+            else None,
+            axis=1,
+        )
+
     # ── Step 7: Prepare final DataFrame ────────────────────────
     with timer("Preparing graham_metrics table"):
         graham_metrics = merged[[
             "symbol", "date", "close_price",
             "eps", "bvps", "pe", "pb",
             "graham_number", "margin_of_safety",
+            "de_ratio", "current_ratio",
+            "dividend_yield", "payout_ratio",
             "report_date",
         ]].copy()
 

@@ -34,7 +34,7 @@ const CustomTooltip = ({ active, payload }: any) => {
     );
 };
 
-export default function ValuationBubble({ data }: Props) {
+export default function GrahamBubble({ data }: Props) {
     if (!data.length) return null;
 
     const maxGraham = Math.max(...data.map(d => d.graham_number));

@@ -40,7 +40,7 @@ const CustomTooltip = ({ active, payload }: any) => {
     );
 };
 
-export default function ValuationScatter({ data }: Props) {
+export default function GrahamScatter({ data }: Props) {
     if (!data.length) return null;
 
     const formatted = data.map(d => ({

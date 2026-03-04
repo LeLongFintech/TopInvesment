@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import ValuationScatter from './charts/ValuationScatter';
-import ValuationBubble from './charts/ValuationBubble';
-import SectorDonut from './charts/SectorDonut';
+import GrahamScatter from './charts/graham/GrahamScatter';
+import GrahamBubble from './charts/graham/GrahamBubble';
+import GrahamSectorDonut from './charts/graham/GrahamSectorDonut';
 
 /* ── Types ─────────────────────────────────────────────────── */
 interface GrahamResultItem {
@@ -434,11 +434,11 @@ export default function ValueFilter() {
         {results && results.items.length > 0 && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ValuationScatter data={results.chart_scatter} />
-              <ValuationBubble data={results.chart_bubble} />
+              <GrahamScatter data={results.chart_scatter} />
+              <GrahamBubble data={results.chart_bubble} />
             </div>
             <div className="max-w-lg mx-auto">
-              <SectorDonut data={results.chart_sectors} />
+              <GrahamSectorDonut data={results.chart_sectors} />
             </div>
           </div>
         )}

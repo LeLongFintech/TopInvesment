@@ -30,12 +30,12 @@ const CustomTooltip = ({ active, payload }: any) => {
     );
 };
 
-const renderLabel = ({ industry, percentage }: any) => {
+const renderLabel = ({ percentage }: any) => {
     if (percentage < 8) return '';
     return `${percentage}%`;
 };
 
-export default function SectorDonut({ data }: Props) {
+export default function GrahamSectorDonut({ data }: Props) {
     if (!data.length) return null;
 
     return (

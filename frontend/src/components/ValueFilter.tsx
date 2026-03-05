@@ -258,7 +258,7 @@ export default function ValueFilter() {
                   type="range" min={1} max={20} step={1}
                   value={criteria.eps_consecutive_years}
                   onChange={(e) => setCriteria(c => ({ ...c, eps_consecutive_years: +e.target.value }))}
-                  className="flex-1 h-1.5 bg-el rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
+                  className="flex-1"
                 />
                 <span className="text-heading font-bold text-lg min-w-[3ch] text-right">{criteria.eps_consecutive_years}</span>
                 <span className="text-muted text-xs">năm</span>
@@ -277,7 +277,7 @@ export default function ValueFilter() {
                   type="range" min={1} max={50} step={0.5}
                   value={criteria.pe_max ?? 15}
                   onChange={(e) => setCriteria(c => ({ ...c, pe_max: +e.target.value }))}
-                  className="flex-1 h-1.5 bg-el rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
+                  className="flex-1"
                 />
                 <span className="text-heading font-bold text-lg min-w-[3ch] text-right">≤ {criteria.pe_max}</span>
               </div>
@@ -295,7 +295,7 @@ export default function ValueFilter() {
                   type="range" min={0.1} max={10} step={0.1}
                   value={criteria.pb_max ?? 1.5}
                   onChange={(e) => setCriteria(c => ({ ...c, pb_max: +e.target.value }))}
-                  className="flex-1 h-1.5 bg-el rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
+                  className="flex-1"
                 />
                 <span className="text-heading font-bold text-lg min-w-[3ch] text-right">≤ {criteria.pb_max}</span>
               </div>
@@ -321,7 +321,7 @@ export default function ValueFilter() {
                   type="range" min={0} max={80} step={1}
                   value={Math.round(criteria.margin_of_safety_min * 100)}
                   onChange={(e) => setCriteria(c => ({ ...c, margin_of_safety_min: +e.target.value / 100 }))}
-                  className="flex-1 h-1.5 bg-el rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
+                  className="flex-1"
                 />
                 <span className="text-heading font-bold text-lg min-w-[3ch] text-right">≥ {Math.round(criteria.margin_of_safety_min * 100)}%</span>
               </div>
@@ -339,7 +339,7 @@ export default function ValueFilter() {
                   type="range" min={0.1} max={5} step={0.1}
                   value={criteria.de_max ?? 1}
                   onChange={(e) => setCriteria(c => ({ ...c, de_max: +e.target.value }))}
-                  className="flex-1 h-1.5 bg-el rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
+                  className="flex-1"
                 />
                 <span className="text-heading font-bold text-lg min-w-[3ch] text-right">{'<'} {criteria.de_max}</span>
               </div>
@@ -357,7 +357,7 @@ export default function ValueFilter() {
                   type="range" min={0.5} max={10} step={0.1}
                   value={criteria.cr_min ?? 2}
                   onChange={(e) => setCriteria(c => ({ ...c, cr_min: +e.target.value }))}
-                  className="flex-1 h-1.5 bg-el rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
+                  className="flex-1"
                 />
                 <span className="text-heading font-bold text-lg min-w-[3ch] text-right">{'>'} {criteria.cr_min}</span>
               </div>
@@ -375,7 +375,7 @@ export default function ValueFilter() {
                   type="range" min={0} max={20} step={0.5}
                   value={Math.round((criteria.div_yield_min ?? 0.05) * 100)}
                   onChange={(e) => setCriteria(c => ({ ...c, div_yield_min: +e.target.value / 100 }))}
-                  className="flex-1 h-1.5 bg-el rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
+                  className="flex-1"
                 />
                 <span className="text-heading font-bold text-lg min-w-[3ch] text-right">≥ {Math.round((criteria.div_yield_min ?? 0.05) * 100)}%</span>
               </div>

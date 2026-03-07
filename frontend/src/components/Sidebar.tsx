@@ -46,21 +46,10 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         </div>
       </div>
       <div className="flex flex-col gap-2">
-
         <button className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors hover:bg-el group w-full text-left">
           <span className="material-symbols-outlined text-muted group-hover:text-heading transition-colors">settings</span>
           <p className="text-muted group-hover:text-heading text-sm font-medium leading-normal transition-colors">Cài đặt</p>
         </button>
-        <div className="mt-4 p-4 rounded-xl bg-gradient-to-br from-el to-sidebar border border-line">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="size-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-sm">diamond</span>
-            </div>
-            <p className="text-heading text-sm font-bold">Nâng cấp VIP</p>
-          </div>
-          <p className="text-muted text-xs mb-3">Mở khóa tính năng cao cấp ngay hôm nay.</p>
-          <button className="w-full py-2 bg-primary hover:bg-primary-dark text-white text-xs font-bold rounded-lg transition-colors">Nâng cấp</button>
-        </div>
       </div>
     </aside>
   );

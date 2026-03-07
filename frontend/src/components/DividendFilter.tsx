@@ -106,8 +106,8 @@ export default function DividendFilter() {
             onClick={() => runFilter(1)}
             disabled={loading}
             className={`flex items-center gap-2 h-12 px-8 rounded-xl text-white font-bold text-sm transition-all shadow-lg ${loading
-                ? 'bg-gray-500 opacity-50 cursor-not-allowed'
-                : 'bg-primary hover:bg-primary-dark shadow-primary/20 cursor-pointer'
+              ? 'bg-gray-500 opacity-50 cursor-not-allowed'
+              : 'bg-primary hover:bg-primary-dark shadow-primary/20 cursor-pointer'
               }`}
           >
             {loading ? (
@@ -145,8 +145,8 @@ export default function DividendFilter() {
                     key={n}
                     onClick={() => setCriteria(c => ({ ...c, consecutive_years: n }))}
                     className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${criteria.consecutive_years === n
-                        ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                        : 'bg-el text-muted hover:bg-card hover:text-heading'
+                      ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                      : 'bg-el text-muted hover:bg-card hover:text-heading'
                       }`}
                   >
                     {n} năm
@@ -279,12 +279,12 @@ export default function DividendFilter() {
                           {/* Rank */}
                           <td className="px-6 py-4 text-center">
                             <span className={`inline-flex items-center justify-center size-8 rounded-full text-xs font-black ${item.rank === 1
-                                ? 'bg-yellow-500/20 text-yellow-400 ring-2 ring-yellow-500/30'
-                                : item.rank === 2
-                                  ? 'bg-gray-400/20 text-gray-300 ring-2 ring-gray-400/30'
-                                  : item.rank === 3
-                                    ? 'bg-orange-500/20 text-orange-400 ring-2 ring-orange-500/30'
-                                    : 'bg-el text-muted'
+                              ? 'bg-yellow-500/20 text-yellow-400 ring-2 ring-yellow-500/30'
+                              : item.rank === 2
+                                ? 'bg-gray-400/20 text-gray-300 ring-2 ring-gray-400/30'
+                                : item.rank === 3
+                                  ? 'bg-orange-500/20 text-orange-400 ring-2 ring-orange-500/30'
+                                  : 'bg-el text-muted'
                               }`}>
                               {item.rank}
                             </span>
@@ -324,10 +324,10 @@ export default function DividendFilter() {
                               <div className="w-full h-2 bg-el rounded-full overflow-hidden">
                                 <div
                                   className={`h-full rounded-full transition-all ${item.avg_dividend_yield >= 0.08
-                                      ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
-                                      : item.avg_dividend_yield >= 0.05
-                                        ? 'bg-gradient-to-r from-primary to-purple-500'
-                                        : 'bg-gradient-to-r from-yellow-500 to-orange-500'
+                                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
+                                    : item.avg_dividend_yield >= 0.05
+                                      ? 'bg-gradient-to-r from-primary to-purple-500'
+                                      : 'bg-gradient-to-r from-yellow-500 to-orange-500'
                                     }`}
                                   style={{ width: `${Math.min(100, (item.avg_dividend_yield / 0.15) * 100)}%` }}
                                 />
@@ -338,10 +338,10 @@ export default function DividendFilter() {
                           {/* Avg Coverage Ratio */}
                           <td className="px-6 py-4 whitespace-nowrap text-right">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${item.avg_coverage_ratio >= 3
-                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                : item.avg_coverage_ratio >= 2
-                                  ? 'bg-primary/10 text-primary border-primary/20'
-                                  : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                              : item.avg_coverage_ratio >= 2
+                                ? 'bg-primary/10 text-primary border-primary/20'
+                                : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
                               }`}>
                               {item.avg_coverage_ratio.toFixed(2)}x
                             </span>
@@ -397,7 +397,7 @@ export default function DividendFilter() {
 
         {/* Footer */}
         <div className="pt-6 border-t border-line flex flex-col md:flex-row justify-between items-center text-muted text-sm">
-          <p>© 2024 TopInvestment. All rights reserved.</p>
+          <p>© 2026 TopInvestment. All rights reserved.</p>
         </div>
       </div>
     </main>

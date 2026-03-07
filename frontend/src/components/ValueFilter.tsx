@@ -625,7 +625,7 @@ export default function ValueFilter() {
 
         {/* Footer */}
         <div className="pt-6 border-t border-line flex flex-col md:flex-row justify-between items-center text-muted text-sm">
-          <p>© 2024 TopInvestment. All rights reserved.</p>
+          <p>© 2026 TopInvestment. All rights reserved.</p>
         </div>
       </main>
     </div>

@@ -153,7 +153,7 @@ def compute_annual_fundamentals(engine) -> pd.DataFrame:
     annual["eps_annual_growth"] = safe_pct_change(annual["eps_annual"], annual["eps_annual_prev"])
     annual = annual.sort_values(["symbol", "year"])
     annual["avg_eps_growth_5y"] = annual.groupby("symbol")["eps_annual_growth"].transform(
-        lambda x: x.rolling(5, min_periods=1).mean()
+        lambda x: x.rolling(5, min_periods=5).mean()
     )
 
     result_cols = [
@@ -193,7 +193,7 @@ def compute_quarterly_eps(engine) -> pd.DataFrame:
     # 2-quarter rolling avg
     eps_q = eps_q.sort_values(["symbol", "date"])
     eps_q["avg_eps_growth_2q"] = eps_q.groupby("symbol")["delta_eps_quarterly"].transform(
-        lambda x: x.rolling(2, min_periods=1).mean()
+        lambda x: x.rolling(2, min_periods=2).mean()
     )
 
     return eps_q[["symbol", "date", "delta_eps_quarterly", "avg_eps_growth_2q"]]
@@ -249,7 +249,7 @@ def compute_adl_and_volume(df: pd.DataFrame) -> pd.DataFrame:
 
     # Delta Vol = (volume − avg_vol_50) / avg_vol_50
     avg_vol_50 = df.groupby("symbol")["volume"].transform(
-        lambda x: x.rolling(50, min_periods=1).mean()
+        lambda x: x.rolling(50, min_periods=50).mean()
     )
     df["delta_vol"] = safe_divide(volume - avg_vol_50, avg_vol_50)
 

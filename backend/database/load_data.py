@@ -105,6 +105,12 @@ def run_pipeline():
     with timer("volume.xlsx"):
         volume_raw = drop_unnamed(pd.read_excel(DATA_DIR / "volume.xlsx"))
 
+    with timer("price(high).xlsx"):
+        high_raw = drop_unnamed(pd.read_excel(DATA_DIR / "price(high).xlsx"))
+
+    with timer("price(low).xlsx"):
+        low_raw = drop_unnamed(pd.read_excel(DATA_DIR / "price(low).xlsx"))
+
     print()
 
     # ── Step 2: Extract unique stocks ──────────────────────────
@@ -190,6 +196,34 @@ def run_pipeline():
             on=["date", "symbol"],
             how="outer",
         )
+
+    with timer("Melting high price data"):
+        high_raw = high_raw.rename(columns={"Date": "date"})
+        if "date" not in high_raw.columns:
+            date_col = [c for c in high_raw.columns if "date" in c.lower()][0]
+            high_raw = high_raw.rename(columns={date_col: "date"})
+        high_long = high_raw.melt(
+            id_vars=["date"],
+            var_name="symbol",
+            value_name="high_price",
+        )
+        high_long = high_long.dropna(subset=["high_price"])
+
+    with timer("Melting low price data"):
+        low_raw = low_raw.rename(columns={"Date": "date"})
+        if "date" not in low_raw.columns:
+            date_col = [c for c in low_raw.columns if "date" in c.lower()][0]
+            low_raw = low_raw.rename(columns={date_col: "date"})
+        low_long = low_raw.melt(
+            id_vars=["date"],
+            var_name="symbol",
+            value_name="low_price",
+        )
+        low_long = low_long.dropna(subset=["low_price"])
+
+    with timer("Merging high + low into market_data"):
+        market_data = market_data.merge(high_long, on=["date", "symbol"], how="left")
+        market_data = market_data.merge(low_long, on=["date", "symbol"], how="left")
 
     with timer("Sorting by symbol → date"):
         market_data = market_data.sort_values(["symbol", "date"]).reset_index(drop=True)

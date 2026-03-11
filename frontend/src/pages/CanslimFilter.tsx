@@ -52,12 +52,13 @@ const DEFAULT_CRITERIA: FilterCriteria = {
 /* ── Helpers ───────────────────────────────────────────────── */
 function ratingBadge(value: number) {
   const bg =
-    value >= 90 ? 'bg-green-500/20 text-green-400 border-green-500/30'
-    : value >= 70 ? 'bg-primary/20 text-primary border-primary/30'
+    value >= 90 ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 ring-1 ring-blue-500/20'
+    : value >= 70 ? 'bg-green-500/20 text-green-400 border-green-500/30'
     : value >= 50 ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
     : 'bg-red-500/20 text-red-400 border-red-500/30';
   return (
     <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold border ${bg}`}>
+      {value >= 90 && <span className="mr-0.5">★</span>}
       {value}
     </span>
   );
@@ -456,6 +457,76 @@ export default function CanslimFilter() {
             </div>
           </div>
         )}
+
+        {/* ── Khu vực 2: Top ngành dẫn dắt ──────────────── */}
+        {results && results.items.length > 0 && (() => {
+          const industryMap = new Map<string, { count: number; rsSum: number; crSum: number }>();
+          results.items.forEach(item => {
+            const ind = item.gics_industry || 'Chưa phân loại';
+            const prev = industryMap.get(ind) || { count: 0, rsSum: 0, crSum: 0 };
+            industryMap.set(ind, {
+              count: prev.count + 1,
+              rsSum: prev.rsSum + item.rs_rating,
+              crSum: prev.crSum + item.cr_score,
+            });
+          });
+          const industries = Array.from(industryMap.entries())
+            .map(([name, d]) => ({
+              name,
+              count: d.count,
+              avgRS: d.rsSum / d.count,
+              avgCR: d.crSum / d.count,
+            }))
+            .sort((a, b) => b.avgRS - a.avgRS)
+            .slice(0, 10);
+          const maxRS = Math.max(...industries.map(i => i.avgRS), 1);
+
+          return (
+            <div className="bg-surface-alt border border-line rounded-2xl overflow-hidden">
+              <div className="px-6 py-4 border-b border-line bg-sidebar flex items-center gap-3">
+                <span className="material-symbols-outlined text-primary">leaderboard</span>
+                <h3 className="text-heading font-bold text-lg">Top ngành dẫn dắt</h3>
+                <span className="ml-auto text-muted text-xs">{industries.length} ngành • Xếp theo RS Rating trung bình</span>
+              </div>
+              <div className="p-6 space-y-3">
+                {industries.map((ind, idx) => (
+                  <div key={ind.name} className="flex items-center gap-4">
+                    <span className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-black shrink-0 ${
+                      idx === 0 ? 'bg-yellow-500/20 text-yellow-400 ring-2 ring-yellow-500/30'
+                      : idx === 1 ? 'bg-gray-400/20 text-gray-300 ring-2 ring-gray-400/30'
+                      : idx === 2 ? 'bg-orange-500/20 text-orange-400 ring-2 ring-orange-500/30'
+                      : 'bg-el text-muted'
+                    }`}>{idx + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-heading text-sm font-semibold truncate">{ind.name}</span>
+                        <div className="flex items-center gap-3 shrink-0 ml-3">
+                          <span className="text-xs text-muted">{ind.count} CP</span>
+                          <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
+                            ind.avgRS >= 90 ? 'bg-blue-500/20 text-blue-400'
+                            : ind.avgRS >= 80 ? 'bg-green-500/20 text-green-400'
+                            : 'bg-primary/20 text-primary'
+                          }`}>RS {ind.avgRS.toFixed(0)}</span>
+                          <span className="text-xs font-bold text-heading">CR {ind.avgCR.toFixed(1)}</span>
+                        </div>
+                      </div>
+                      <div className="w-full h-2 bg-el rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${
+                            ind.avgRS >= 90 ? 'bg-gradient-to-r from-blue-600 to-blue-400'
+                            : ind.avgRS >= 80 ? 'bg-gradient-to-r from-emerald-600 to-emerald-400'
+                            : 'bg-gradient-to-r from-primary to-purple-500'
+                          }`}
+                          style={{ width: `${(ind.avgRS / maxRS) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Footer */}
         <div className="pt-6 border-t border-line flex flex-col md:flex-row justify-between items-center text-muted text-sm">

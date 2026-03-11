@@ -13,10 +13,10 @@ def _percentile_rating(series: pd.Series) -> pd.Series:
     """Rank a Series by percentile, scaled to 1–99.
 
     Highest value receives 99, lowest receives 1.
-    Uses 'average' method for ties.
+    NaN values receive rating 1 (lowest).
     """
     pct = series.rank(pct=True, method="average")
-    return (pct * 98 + 1).round().astype(int)
+    return (pct * 98 + 1).fillna(1).round().astype(int)
 
 
 class CanslimService:

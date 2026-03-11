@@ -50,7 +50,7 @@ pnpm install
 pnpm dev
 ```
 
-Ứng dụng khởi chạy tại http://localhost:5173.
+Ứng dụng khởi chạy tại http://localhost:3000.
 
 Đảm bảo Backend API đang chạy tại http://localhost:8000 trước khi sử dụng các bộ lọc.
 

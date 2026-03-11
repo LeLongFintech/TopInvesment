@@ -4,12 +4,12 @@
  */
 
 import React, { useState } from 'react';
-import { useTheme } from './ThemeContext';
-import Sidebar from './components/Sidebar';
-import Dashboard from './components/Dashboard';
-import CanslimFilter from './components/CanslimFilter';
-import ValueFilter from './components/ValueFilter';
-import DividendFilter from './components/DividendFilter';
+import { useTheme } from './context/ThemeContext';
+import Sidebar from './components/layout/Sidebar';
+import Dashboard from './pages/Dashboard';
+import CanslimFilter from './pages/CanslimFilter';
+import ValueFilter from './pages/ValueFilter';
+import DividendFilter from './pages/DividendFilter';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');

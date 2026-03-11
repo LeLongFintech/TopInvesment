@@ -1,12 +1,13 @@
 import React, { useState, useCallback } from 'react';
-import GrahamScatter from './charts/graham/GrahamScatter';
-import GrahamBubble from './charts/graham/GrahamBubble';
-import GrahamSectorDonut from './charts/graham/GrahamSectorDonut';
-import GrahamTreemap from './charts/graham/GrahamTreemap';
-import GrahamShieldBar from './charts/graham/GrahamShieldBar';
-import GrahamPriceVsValue from './charts/graham/GrahamPriceVsValue';
-import GrahamHistoricalBands from './charts/graham/GrahamHistoricalBands';
-import DatePicker from './ui/DatePicker';
+import GrahamScatter from '../components/charts/graham/GrahamScatter';
+import GrahamBubble from '../components/charts/graham/GrahamBubble';
+import GrahamSectorDonut from '../components/charts/graham/GrahamSectorDonut';
+import GrahamTreemap from '../components/charts/graham/GrahamTreemap';
+import GrahamShieldBar from '../components/charts/graham/GrahamShieldBar';
+import GrahamPriceVsValue from '../components/charts/graham/GrahamPriceVsValue';
+import GrahamHistoricalBands from '../components/charts/graham/GrahamHistoricalBands';
+import DatePicker from '../components/ui/DatePicker';
+import { fetchValueFilter, fetchStockDetail } from '../api/valueApi';
 
 /* ── Types ─────────────────────────────────────────────────── */
 interface GrahamResultItem {
@@ -69,7 +70,7 @@ const DEFAULT_CRITERIA: FilterCriteria = {
   div_yield_min: 0.05,
 };
 
-const API_BASE = 'http://localhost:8000/api/v1';
+
 
 export default function ValueFilter() {
   /* ── State ───────────────────────────────────────────────── */
@@ -121,13 +122,7 @@ export default function ValueFilter() {
     };
 
     try {
-      const res = await fetch(`${API_BASE}/filters/value`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
-      const data: FilterResponse = await res.json();
+      const data: FilterResponse = await fetchValueFilter(body);
       setResults(data);
     } catch (err: any) {
       setError(err.message || 'Lỗi kết nối API');
@@ -146,9 +141,8 @@ export default function ValueFilter() {
     setSelectedSymbol(symbol);
     setDetailLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/filters/value/stock/${encodeURIComponent(symbol)}?years=5`);
-      if (!res.ok) throw new Error('Failed to load detail');
-      setDetailData(await res.json());
+      const data = await fetchStockDetail(symbol);
+      setDetailData(data);
     } catch { setDetailData(null); }
     finally { setDetailLoading(false); }
   }, [selectedSymbol]);

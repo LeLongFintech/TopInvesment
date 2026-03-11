@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { fetchDividendFilter } from '../api/dividendApi';
 
 /* ── Types ─────────────────────────────────────────────────── */
 interface DividendResultItem {
@@ -34,7 +35,7 @@ const DEFAULT_CRITERIA: FilterCriteria = {
   coverage_ratio_min: 1.5,
 };
 
-const API_BASE = 'http://localhost:8000/api/v1';
+
 
 export default function DividendFilter() {
   /* ── State ───────────────────────────────────────────────── */
@@ -63,13 +64,7 @@ export default function DividendFilter() {
     };
 
     try {
-      const res = await fetch(`${API_BASE}/filters/dividend`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
-      const data: FilterResponse = await res.json();
+      const data: FilterResponse = await fetchDividendFilter(body);
       setResults(data);
     } catch (err: any) {
       setError(err.message || 'Lỗi kết nối API');

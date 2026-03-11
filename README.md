@@ -94,7 +94,7 @@ pnpm dev
 
 ### 3. Truy cập
 
-- Frontend: http://localhost:5173
+- Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
 - API Docs (Swagger): http://localhost:8000/docs
 

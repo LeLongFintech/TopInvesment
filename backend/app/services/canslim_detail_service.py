@@ -54,7 +54,7 @@ class CanslimDetailService:
         """Query eps_quarterly for the stock, compute revenue_growth from income_statement."""
         rows = session.execute(
             text("""
-                SELECT date, eps_basic
+                SELECT date, eps
                 FROM eps_quarterly
                 WHERE symbol = :s
                 ORDER BY date
@@ -94,7 +94,7 @@ class CanslimDetailService:
                 )
             result.append(QuarterlyEpsPoint(
                 quarter=q_label,
-                eps=round(float(r["eps_basic"]), 4) if r["eps_basic"] is not None else None,
+                eps=round(float(r["eps"]), 4) if r["eps"] is not None else None,
                 revenue_growth=rev_growth,
             ))
         return result

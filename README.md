@@ -115,10 +115,10 @@ Dự án thuộc khuôn khổ môn học **Phân tích Chứng khoán** — Họ
 | Vị trí | Chuyên trách | Họ & Tên |
 |---|---|---|
 | **Leader / Tech Lead** | Architect, Data Pipeline, Analytics Engine, Full-stack | **Lê Hoàng Long** |
-| **Lead Content** | Fundamental Data Structure, BCTC Mapping | **Lê Thị Thanh Mai** |
-| **Lead Content** | Data Sourcing, Filter Criteria Setting | **Nguyễn Tuấn Vũ** |
+| **Lead Content** | Financial Logic Validation, Quality Assurance (QA), and Data Visualization Design | **Lê Thị Thanh Mai** |
+| **Lead Content** | Data Sourcing, Filter Criteria Setting, Quality Assurance, and Chart Prototyping | **Nguyễn Tuấn Vũ** |
 
-*Tổng quy mô nhân sự: 10 thành viên.*
+*Tổng quy mô thành viên: 10 thành viên.*
 
 ---
 

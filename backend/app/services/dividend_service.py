@@ -2,9 +2,11 @@ from sqlalchemy import text
 
 from app.repositories.database import get_session
 from app.schemas.dividend import (
+    DividendChartDetailResponse,
     DividendFilterRequest,
     DividendFilterResponse,
     DividendResultItem,
+    DividendYearlyPoint,
 )
 
 REFERENCE_YEAR = 2025
@@ -137,3 +139,39 @@ class DividendService:
             reference_year=REFERENCE_YEAR,
             years_analyzed=request.consecutive_years,
         )
+
+    def get_chart_detail(self, symbol: str) -> DividendChartDetailResponse:
+        """Yearly DPS, yield, DCR for a single stock — powers 2 dividend charts."""
+        with get_session() as session:
+            ind_row = session.execute(
+                text("SELECT gics_industry FROM stocks WHERE symbol = :s"),
+                {"s": symbol},
+            ).mappings().first()
+            gics_industry = ind_row["gics_industry"] if ind_row else None
+
+            rows = session.execute(
+                text("""
+                    SELECT year, dps, dividend_yield, dividend_coverage_ratio
+                    FROM dividend_metrics
+                    WHERE symbol = :s
+                    ORDER BY year
+                """),
+                {"s": symbol},
+            ).mappings().all()
+
+            yearly = [
+                DividendYearlyPoint(
+                    year=int(r["year"]),
+                    dps=round(float(r["dps"]), 4) if r["dps"] is not None else None,
+                    dividend_yield=round(float(r["dividend_yield"]), 4) if r["dividend_yield"] is not None else None,
+                    dcr=round(float(r["dividend_coverage_ratio"]), 4) if r["dividend_coverage_ratio"] is not None else None,
+                )
+                for r in rows
+            ]
+
+        return DividendChartDetailResponse(
+            symbol=symbol,
+            gics_industry=gics_industry,
+            yearly=yearly,
+        )
+

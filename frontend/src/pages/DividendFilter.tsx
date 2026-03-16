@@ -1,5 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import { fetchDividendFilter } from '../api/dividendApi';
+import { fetchDividendFilter, fetchDividendChartDetail } from '../api/dividendApi';
+import DividendYieldCombo from '../components/charts/dividend/DividendYieldCombo';
+import DcrTrendChart from '../components/charts/dividend/DcrTrendChart';
 
 /* ── Types ─────────────────────────────────────────────────── */
 interface DividendResultItem {
@@ -46,6 +48,22 @@ export default function DividendFilter() {
   const [sortBy, setSortBy] = useState('avg_coverage_ratio');
   const [sortOrder, setSortOrder] = useState('desc');
   const [page, setPage] = useState(1);
+
+  // Drill-down charts
+  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+  const [chartData, setChartData] = useState<any>(null);
+  const [chartLoading, setChartLoading] = useState(false);
+
+  const openChartDetail = useCallback(async (symbol: string) => {
+    if (selectedSymbol === symbol) { setSelectedSymbol(null); setChartData(null); return; }
+    setSelectedSymbol(symbol);
+    setChartLoading(true);
+    try {
+      const data = await fetchDividendChartDetail(symbol);
+      setChartData(data);
+    } catch { setChartData(null); }
+    finally { setChartLoading(false); }
+  }, [selectedSymbol]);
 
   /* ── Handlers ────────────────────────────────────────────── */
   const runFilter = useCallback(async (pageNum = 1) => {
@@ -270,7 +288,7 @@ export default function DividendFilter() {
                     </thead>
                     <tbody className="divide-y divide-line">
                       {results.items.map(item => (
-                        <tr key={item.symbol} className="group hover:bg-el/30 transition-colors">
+                        <tr key={item.symbol} onClick={() => openChartDetail(item.symbol)} className="group hover:bg-el/30 transition-colors cursor-pointer">
                           {/* Rank */}
                           <td className="px-6 py-4 text-center">
                             <span className={`inline-flex items-center justify-center size-8 rounded-full text-xs font-black ${item.rank === 1
@@ -387,6 +405,48 @@ export default function DividendFilter() {
                 )}
               </>
             )}
+          </div>
+        )}
+
+        {/* ── Drill-down Modal ────────────────────────────────── */}
+        {selectedSymbol && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => { setSelectedSymbol(null); setChartData(null); }}>
+            <div className="bg-surface w-full max-w-6xl max-h-[90vh] rounded-2xl border border-line shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
+              {/* Modal header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-line bg-sidebar/50 rounded-t-2xl">
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/20 p-2 rounded-lg">
+                    <span className="material-symbols-outlined text-primary text-xl">payments</span>
+                  </div>
+                  <div>
+                    <h3 className="text-heading text-lg font-bold">{selectedSymbol}</h3>
+                    <p className="text-muted text-xs">Phân tích cổ tức chi tiết</p>
+                  </div>
+                </div>
+                <button onClick={() => { setSelectedSymbol(null); setChartData(null); }} className="p-2 hover:bg-el rounded-lg transition-colors">
+                  <span className="material-symbols-outlined text-muted hover:text-heading">close</span>
+                </button>
+              </div>
+              {/* Modal body */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {chartLoading ? (
+                  <div className="flex items-center justify-center py-20">
+                    <span className="material-symbols-outlined animate-spin text-4xl text-primary">progress_activity</span>
+                    <span className="text-muted ml-3 text-lg">Đang tải dữ liệu...</span>
+                  </div>
+                ) : chartData?.yearly?.length ? (
+                  <div className="space-y-6">
+                    <DividendYieldCombo data={chartData.yearly} symbol={selectedSymbol} />
+                    <DcrTrendChart data={chartData.yearly} symbol={selectedSymbol} />
+                  </div>
+                ) : (
+                  <div className="text-center py-20">
+                    <span className="material-symbols-outlined text-4xl text-muted mb-3 block">info</span>
+                    <p className="text-muted text-lg">Không có dữ liệu cổ tức cho mã này</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 

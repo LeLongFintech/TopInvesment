@@ -51,3 +51,19 @@ class DividendFilterResponse(BaseModel):
     page_size: int = 50
     reference_year: int = Field(2025, description="Năm tham chiếu")
     years_analyzed: int = Field(5, description="Số năm phân tích")
+
+
+# ── Chart detail (drill-down) ──────────────────────────────
+
+class DividendYearlyPoint(BaseModel):
+    year: int
+    dps: float | None = None
+    dividend_yield: float | None = None
+    dcr: float | None = None
+
+
+class DividendChartDetailResponse(BaseModel):
+    symbol: str
+    gics_industry: str | None = None
+    yearly: list[DividendYearlyPoint] = Field(default_factory=list)
+

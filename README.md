@@ -36,7 +36,7 @@ Hệ thống cung cấp 3 lăng kính đầu tư chuyên biệt, được tinh c
 
 Dự án tuân theo tiêu chuẩn **Client-Server Architecture**, chia làm 3 phân hệ độc lập nhằm tối ưu hóa hiệu suất xử lý dữ liệu lớn (Big Data):
 
-- **Data Pipeline** (`backend/database/`): Nền tảng làm sạch, tổng hợp, nội suy và tính toán hàng triệu bản ghi (từ năm 2000-2025) từ Excel vào PostgreSQL.
+- **Data Pipeline** (`backend/database/`): Nền tảng làm sạch, tổng hợp, nội suy và tính toán hàng triệu bản ghi (từ năm 2000-2024) từ Excel vào PostgreSQL.
 - **Backend API Engine** (`backend/app/`): Động cơ lọc siêu tốc với FastAPI và SQLAlchemy. Trả về hàng ngàn kết quả lọc phức tạp và phân trang dữ liệu trong chưa tới 200ms.
 - **Frontend Dashboard** (`frontend/`): Trải nghiệm người dùng mượt mà, Dark/Light Mode chuẩn tài chính, biểu đồ (ApexCharts & Recharts) phân quyền tương tác trơn tru.
 

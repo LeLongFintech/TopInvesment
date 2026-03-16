@@ -154,7 +154,7 @@ export default function DividendFilter() {
                 <h4 className="text-heading font-bold">Trả cổ tức liên tục</h4>
                 <span className="material-symbols-outlined text-primary text-sm">calendar_month</span>
               </div>
-              <p className="text-muted text-xs mb-4">Số năm liên tục trả cổ tức (tham chiếu từ 2025)</p>
+              <p className="text-muted text-xs mb-4">Số năm liên tục trả cổ tức (tham chiếu từ 2024)</p>
               <div className="flex gap-2">
                 {([3, 4, 5] as const).map(n => (
                   <button

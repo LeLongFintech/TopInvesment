@@ -3,7 +3,7 @@ import React from 'react';
 // ── Data ──────────────────────────────────────────────
 const stats = [
   { icon: 'apartment', value: '800+', label: 'Doanh nghiệp niêm yết', sub: 'SET & mai' },
-  { icon: 'account_balance_wallet', value: '~$550B', label: 'Vốn hóa thị trường', sub: 'USD (2024–2025)' },
+  { icon: 'account_balance_wallet', value: '~$550B', label: 'Vốn hóa thị trường', sub: 'USD (2024)' },
   { icon: 'swap_horiz', value: '~$2–3B', label: 'GTGD trung bình/ngày', sub: 'Thanh khoản cao' },
   { icon: 'public', value: 'Top 3', label: 'Đông Nam Á', sub: 'Quy mô ASEAN' },
 ];
@@ -189,7 +189,7 @@ export default function Dashboard() {
 
           <div className="mt-4 bg-surface border border-line rounded-2xl p-6">
             <p className="text-body text-sm leading-relaxed">
-              Tính đến giai đoạn 2024–2025, SET có hơn 800 doanh nghiệp niêm yết trên hai bảng chính, với tổng vốn hóa thị trường dao động khoảng
+              Tính đến năm 2024, SET có hơn 800 doanh nghiệp niêm yết trên hai bảng chính, với tổng vốn hóa thị trường dao động khoảng
               500–600 tỷ USD. Giá trị giao dịch trung bình ngày thường đạt mức vài tỷ USD, phản ánh tính thanh khoản tương đối cao so với các thị trường trong khu vực.
               Cơ cấu nhà đầu tư bao gồm cả cá nhân và tổ chức, trong đó dòng vốn nước ngoài đóng vai trò quan trọng trong việc định hình xu hướng ngắn và trung hạn.
             </p>

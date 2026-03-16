@@ -4,7 +4,7 @@ interface DatePickerProps {
     value: string;                    // YYYY-MM-DD
     onChange: (date: string) => void;
     minDate?: string;                 // default: 2000-01-01
-    maxDate?: string;                 // default: 2025-12-31
+    maxDate?: string;                 // default: 2024-12-31
     placeholder?: string;
 }
 
@@ -16,7 +16,7 @@ const MONTHS = [
 const WEEKDAYS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
 const MIN_YEAR = 2000;
-const MAX_YEAR = 2025;
+const MAX_YEAR = 2024;
 
 function daysInMonth(year: number, month: number) {
     return new Date(year, month + 1, 0).getDate();
@@ -34,7 +34,7 @@ export default function DatePicker({
     value,
     onChange,
     minDate = '2000-01-01',
-    maxDate = '2025-12-31',
+    maxDate = '2024-12-31',
     placeholder = 'Chọn ngày...',
 }: DatePickerProps) {
     const [open, setOpen] = useState(false);

@@ -1,18 +1,21 @@
-import React, { useState, useCallback } from 'react';
-import GrahamScatter from '../components/charts/graham/GrahamScatter';
-import GrahamBubble from '../components/charts/graham/GrahamBubble';
-import GrahamSectorDonut from '../components/charts/graham/GrahamSectorDonut';
-import GrahamTreemap from '../components/charts/graham/GrahamTreemap';
-import GrahamShieldBar from '../components/charts/graham/GrahamShieldBar';
-import GrahamPriceVsValue from '../components/charts/graham/GrahamPriceVsValue';
-import GrahamHistoricalBands from '../components/charts/graham/GrahamHistoricalBands';
-import GrahamRadar from '../components/charts/graham/GrahamRadar';
-import GrahamBullet from '../components/charts/graham/GrahamBullet';
-import GrahamWaterfall from '../components/charts/graham/GrahamWaterfall';
-import GrahamEpsHistory from '../components/charts/graham/GrahamEpsHistory';
-import GrahamPeHistogram from '../components/charts/graham/GrahamPeHistogram';
-import DatePicker from '../components/ui/DatePicker';
+import React, { useState, useCallback, Suspense, lazy } from 'react';
+
+
+// Lazy load heavy chart components to improve initial render performance
+const GrahamScatter = lazy(() => import('../components/charts/graham/GrahamScatter'));
+const GrahamBubble = lazy(() => import('../components/charts/graham/GrahamBubble'));
+const GrahamSectorDonut = lazy(() => import('../components/charts/graham/GrahamSectorDonut'));
+const GrahamTreemap = lazy(() => import('../components/charts/graham/GrahamTreemap'));
+const GrahamShieldBar = lazy(() => import('../components/charts/graham/GrahamShieldBar'));
+const GrahamPriceVsValue = lazy(() => import('../components/charts/graham/GrahamPriceVsValue'));
+const GrahamHistoricalBands = lazy(() => import('../components/charts/graham/GrahamHistoricalBands'));
+const GrahamRadar = lazy(() => import('../components/charts/graham/GrahamRadar'));
+const GrahamBullet = lazy(() => import('../components/charts/graham/GrahamBullet'));
+const GrahamWaterfall = lazy(() => import('../components/charts/graham/GrahamWaterfall'));
+const GrahamEpsHistory = lazy(() => import('../components/charts/graham/GrahamEpsHistory'));
+const GrahamPeHistogram = lazy(() => import('../components/charts/graham/GrahamPeHistogram'));
 import { fetchValueFilter, fetchStockDetail, fetchGrahamChartDetail } from '../api/valueApi';
+import DatePicker from '../components/ui/DatePicker';
 
 /* ── Types ─────────────────────────────────────────────────── */
 interface GrahamResultItem {
@@ -575,7 +578,7 @@ export default function ValueFilter() {
                     <span className="text-muted ml-3 text-lg">Đang tải dữ liệu lịch sử...</span>
                   </div>
                 ) : detailData?.history?.length || chartData ? (
-                  <>
+                  <Suspense fallback={<div className="h-40 animate-pulse bg-el/30 rounded-xl" />}>
                     {/* Row 1: Radar + Bullet */}
                     {chartData && (
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -624,7 +627,7 @@ export default function ValueFilter() {
                         <GrahamHistoricalBands data={detailData.history} symbol={selectedSymbol} />
                       </>
                     )}
-                  </>
+                  </Suspense>
                 ) : (
                   <div className="text-center py-20">
                     <span className="material-symbols-outlined text-4xl text-muted mb-3 block">info</span>
@@ -656,20 +659,22 @@ export default function ValueFilter() {
             </div>
 
             {/* Dashboard grid */}
-            <div className="p-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
-              {/* Row 1: Treemap — full width hero */}
-              <div className="lg:col-span-2">
-                <GrahamTreemap data={results.chart_treemap} />
+            <Suspense fallback={<div className="h-64 animate-pulse bg-el/30 rounded-xl m-5" />}>
+              <div className="p-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {/* Row 1: Treemap — full width hero */}
+                <div className="lg:col-span-2">
+                  <GrahamTreemap data={results.chart_treemap} />
+                </div>
+
+                {/* Row 2: Shield Bar + Scatter side by side */}
+                <GrahamShieldBar data={results.chart_shield} />
+                <GrahamScatter data={results.chart_scatter} />
+
+                {/* Row 3: Bubble + Donut side by side */}
+                <GrahamBubble data={results.chart_bubble} />
+                <GrahamSectorDonut data={results.chart_sectors} />
               </div>
-
-              {/* Row 2: Shield Bar + Scatter side by side */}
-              <GrahamShieldBar data={results.chart_shield} />
-              <GrahamScatter data={results.chart_scatter} />
-
-              {/* Row 3: Bubble + Donut side by side */}
-              <GrahamBubble data={results.chart_bubble} />
-              <GrahamSectorDonut data={results.chart_sectors} />
-            </div>
+            </Suspense>
           </div>
         )}
 

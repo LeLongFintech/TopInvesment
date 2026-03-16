@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, Suspense, lazy } from 'react';
 import { fetchDividendFilter, fetchDividendChartDetail } from '../api/dividendApi';
-import DividendYieldCombo from '../components/charts/dividend/DividendYieldCombo';
-import DcrTrendChart from '../components/charts/dividend/DcrTrendChart';
-import DividendScatter from '../components/charts/dividend/DividendScatter';
-import DividendSectorHeatmap from '../components/charts/dividend/DividendSectorHeatmap';
+
+const DividendYieldCombo = lazy(() => import('../components/charts/dividend/DividendYieldCombo'));
+const DcrTrendChart = lazy(() => import('../components/charts/dividend/DcrTrendChart'));
+const DividendScatter = lazy(() => import('../components/charts/dividend/DividendScatter'));
+const DividendSectorHeatmap = lazy(() => import('../components/charts/dividend/DividendSectorHeatmap'));
 
 /* ── Types ─────────────────────────────────────────────────── */
 interface DividendResultItem {
@@ -419,8 +420,10 @@ export default function DividendFilter() {
               <span className="ml-auto text-muted text-xs">{results.total} cổ phiếu đạt tiêu chí</span>
             </div>
             <div className="p-5 space-y-5">
-              <DividendScatter data={results.items} />
-              <DividendSectorHeatmap data={results.items} />
+              <Suspense fallback={<div className="h-40 animate-pulse bg-el/30 rounded-xl" />}>
+                <DividendScatter data={results.items} />
+                <DividendSectorHeatmap data={results.items} />
+              </Suspense>
             </div>
           </div>
         )}
@@ -452,10 +455,12 @@ export default function DividendFilter() {
                     <span className="text-muted ml-3 text-lg">Đang tải dữ liệu...</span>
                   </div>
                 ) : chartData?.yearly?.length ? (
-                  <div className="space-y-6">
-                    <DividendYieldCombo data={chartData.yearly} symbol={selectedSymbol} />
-                    <DcrTrendChart data={chartData.yearly} symbol={selectedSymbol} />
-                  </div>
+                  <Suspense fallback={<div className="h-40 animate-pulse bg-el/30 rounded-xl" />}>
+                    <div className="space-y-6">
+                      <DividendYieldCombo data={chartData.yearly} symbol={selectedSymbol} />
+                      <DcrTrendChart data={chartData.yearly} symbol={selectedSymbol} />
+                    </div>
+                  </Suspense>
                 ) : (
                   <div className="text-center py-20">
                     <span className="material-symbols-outlined text-4xl text-muted mb-3 block">info</span>

@@ -1,13 +1,14 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, Suspense, lazy } from 'react';
 import DatePicker from '../components/ui/DatePicker';
 import { fetchCanslimFilter, fetchCanslimStockDetail } from '../api/canslimApi';
-import EpsQuarterlyCombo from '../components/charts/canslim/EpsQuarterlyCombo';
-import EpsAnnualGrowth from '../components/charts/canslim/EpsAnnualGrowth';
-import RoeGauge from '../components/charts/canslim/RoeGauge';
-import VolumeObv from '../components/charts/canslim/VolumeObv';
-import PriceMaChart from '../components/charts/canslim/PriceMaChart';
-import RsLineChart from '../components/charts/canslim/RsLineChart';
-import IndustryHeatmap from '../components/charts/canslim/IndustryHeatmap';
+
+const EpsQuarterlyCombo = lazy(() => import('../components/charts/canslim/EpsQuarterlyCombo'));
+const EpsAnnualGrowth = lazy(() => import('../components/charts/canslim/EpsAnnualGrowth'));
+const RoeGauge = lazy(() => import('../components/charts/canslim/RoeGauge'));
+const VolumeObv = lazy(() => import('../components/charts/canslim/VolumeObv'));
+const PriceMaChart = lazy(() => import('../components/charts/canslim/PriceMaChart'));
+const RsLineChart = lazy(() => import('../components/charts/canslim/RsLineChart'));
+const IndustryHeatmap = lazy(() => import('../components/charts/canslim/IndustryHeatmap'));
 
 /* ── Types ─────────────────────────────────────────────────── */
 interface CanslimResultItem {
@@ -556,8 +557,12 @@ export default function CanslimFilter() {
         })()}
 
         {/* ── Khu vực 7: Industry Heatmap ───────────────── */}
-        {results && results.items.length > 0 && (
-          <IndustryHeatmap items={results.items} />
+        {results?.industry_leadership?.length > 0 && (
+          <Suspense fallback={<div className="h-64 animate-pulse bg-el/30 rounded-xl mt-6" />}>
+            <div className="mt-6">
+              <IndustryHeatmap data={results.industry_leadership} />
+            </div>
+          </Suspense>
         )}
 
         {/* ── Stock Detail Modal ──────────────────────── */}

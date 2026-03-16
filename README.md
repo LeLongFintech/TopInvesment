@@ -112,12 +112,12 @@ pnpm dev
 
 Dự án thuộc khuôn khổ môn học **Phân tích Chứng khoán** — Học kỳ 7.
 
-| Vị trí | Chuyên trách | Họ & Tên |
-|---|---|---|
-| **Leader / Tech Lead** | Architect, Data Pipeline, Analytics Engine, Full-stack & Project Management | **Lê Hoàng Long** |
-| **Lead Content** | Financial Logic Validation, Quality Assurance (QA), and Data Visualization Design | **Lê Thị Thanh Mai** |
-| **Lead Content** | Data Sourcing, Filter Criteria Setting, Quality Assurance, and Chart Prototyping | **Nguyễn Tuấn Vũ** |
-| **Members** | Financial Model Research, Chart Conceptualization | |
+| STT | Vị trí | Chuyên trách | Họ & Tên |
+|---|---|---|---|
+|  1  | **Leader / Tech Lead** | Architect, Data Pipeline, Analytics Engine, Full-stack & Project Management | **Lê Hoàng Long** |
+|  2  | **Lead Content** | Financial Logic Validation, Quality Assurance (QA), and Data Visualization Design | **Lê Thị Thanh Mai** |
+|  3  | **Lead Content** | Data Sourcing, Filter Criteria Setting, Quality Assurance, and Chart Prototyping | **Nguyễn Tuấn Vũ** |
+|  4  | **Members** | Financial Model Research, Chart Conceptualization | |
 
 *Tổng quy mô thành viên: 10 thành viên.*
 

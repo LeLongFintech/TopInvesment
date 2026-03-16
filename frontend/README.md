@@ -1,93 +1,86 @@
-# Frontend — TopInvestment
+# Frontend — TopInvestment Dashboard
 
-Giao diện người dùng cho hệ thống sàng lọc cổ phiếu thị trường Thái Lan. Xây dựng trên React + TypeScript + Vite.
+Giao diện người dùng độc quyền cho hệ thống sàng lọc cổ phiếu thị trường chứng khoán Thái Lan (SET). Xây dựng trên nền tảng `React 18` + `TypeScript` + `Vite` và hệ thống biểu đồ tài chính cấp cao.
 
-## Cấu trúc thư mục
+## 🌈 Giao Diện (UI/UX) Thông Minh Đa Chiều
+
+Dashboard cung cấp lăng kính trực quan nhất về thị trường thông qua việc ảo hóa các dãy số báo cáo tài chính khô khan thành các điểm ảnh.
+
+Hệ thống bao gồm 3 phân khu chuyên sâu:
+
+### 1. Bộ lọc Tăng trưởng CANSLIM
+- **Trải nghiệm**: Thanh khoản màu Rating theo bách phân vị: **Xanh dương** (Siêu Việt ≥ 90), **Xanh lá** (Mạnh ≥ 70), **Vàng** (Trung bình), **Đỏ** (Kém).
+- **Biểu đồ Cấp cao**: 
+  - Heatmap Dẫn dắt Ngành (Nhìn toàn cảnh vĩ mô dòng tiền vào nhóm Ngành).
+  - Biểu đồ nến lai đường SMA50 & SMA150 chấm phá điểm Mua/Bán kỹ thuật.
+  - Gauge đo ROE & Combo Chart tăng trưởng EPS.
+
+### 2. Bộ lọc Giá trị Benjamin Graham
+- **Trải nghiệm**: Máy quét Margin of Safety bảo thủ và an toàn.
+- **Biểu đồ Cấp cao**:
+  - Radar Spider Chart chấm 6 điểm hoàn thiện tài chính của doanh nghiệp.
+  - Bubble Plot phát hiện bẫy định giá đắt/rẻ.
+  - P/E Histogram cho biết vị thế đắt rẻ trong cùng một Ngành.
+  - Waterfall bóc tách phần trăm chiết khấu ("Món Hời").
+
+### 3. Bộ lọc Dòng tiền Cổ tức (Dividend Yield)
+- **Trải nghiệm**: Sách lược săn Bò Sữa Cashflow. Dễ dàng định vị Cạm bẫy Cổ tức nhờ đường DCR đỏ ngầu.
+- **Biểu đồ Cấp cao**:
+  - Sector Heatmap Cổ tức chia ngành: Xem khối nào giàu tiền mặt chi trả nhất.
+  - Dashboard Scatter bóc giá trị thực sự của DCR vs Yield.
+  - Combo EPS & Cổ tức tiền mặt qua 5-10 năm.
+
+---
+
+## 🏗️ Cấu Trúc Khối Chuyên Biệt
 
 ```
 frontend/src/
-├── api/                    # Kết nối Backend
-│   ├── client.ts           # API base URL
-│   ├── valueApi.ts         # Hàm gọi API bộ lọc Benjamin Graham
-│   ├── canslimApi.ts       # Hàm gọi API bộ lọc CANSLIM
-│   └── dividendApi.ts      # Hàm gọi API bộ lọc Cổ tức
+├── api/                    # Cổng kết nối Backend (Fetch data)
+│   ├── valueApi.ts         # Gọi Model Graham
+│   ├── canslimApi.ts       # Gọi Model CANSLIM
+│   └── dividendApi.ts      # Gọi Model Dividend
 ├── assets/
-│   └── index.css           # CSS toàn cục, design tokens, theme
+│   └── index.css           # Token Design: Dark/Light colors mix
 ├── components/
 │   ├── layout/
-│   │   └── Sidebar.tsx     # Thanh điều hướng bên trái
-│   ├── ui/
-│   │   └── DatePicker.tsx  # Component chọn ngày
-│   └── charts/graham/      # Biểu đồ phân tích Graham
-│       ├── GrahamTreemap.tsx
-│       ├── GrahamScatter.tsx
-│       ├── GrahamBubble.tsx
-│       ├── GrahamShieldBar.tsx
-│       ├── GrahamSectorDonut.tsx
-│       ├── GrahamPriceVsValue.tsx
-│       └── GrahamHistoricalBands.tsx
+│   │   └── Sidebar.tsx     # Menu điều hướng tĩnh
+│   ├── ui/                 # Core Components (DatePicker, Button)
+│   ├── charts/canslim      # ~ 5 Biểu đồ tăng trưởng (Recharts + Apex)
+│   ├── charts/graham       # ~ 12 Biểu đồ giá trị (Recharts + Apex)
+│   └── charts/dividend     # ~ 2 Biểu đồ Cashflow
 ├── context/
-│   └── ThemeContext.tsx     # Quản lý Dark/Light mode
+│   └── ThemeContext.tsx    # Hook đổi màu Dark / Light siêu nhanh
 ├── pages/
-│   ├── Dashboard.tsx        # Trang tổng quan
-│   ├── ValueFilter.tsx      # Trang bộ lọc Benjamin Graham
-│   ├── CanslimFilter.tsx    # Trang bộ lọc CANSLIM
-│   └── DividendFilter.tsx   # Trang bộ lọc Cổ tức
-├── App.tsx                  # Component gốc, routing theo tab
-└── main.tsx                 # Entry point
+│   ├── ValueFilter.tsx     # Layout Module Graham
+│   ├── CanslimFilter.tsx   # Layout Module CANSLIM
+│   └── DividendFilter.tsx  # Layout Module Cổ Tức
+├── App.tsx                 # Router & Wrapper Layout
+└── main.tsx                # Hydrate rễ Root React
 ```
 
-## Cài đặt
+## 🛠️ Triển Khai Nhanh Development
+
+Framework Frontend được xây dựng dựa trên Vite. Điểm lợi là quá trình chắp vá nóng (Hot Module Reload) chưa tới 50ms khi bạn đang code biểu đồ. 
 
 ```bash
+# Trỏ vào file frontend
 cd frontend
+
+# Cài đặt dependency khắt khe (dùng pnpm)
 pnpm install
-```
 
-## Chạy Development Server
-
-```bash
+# Build Dev-Server
 pnpm dev
 ```
 
-Ứng dụng khởi chạy tại http://localhost:3000.
+Truy cập màn hình điều khiển: `http://localhost:3000`. Cần chắc chắn API Backend (`localhost:8000`) đang kết nối để fetch bảng phân tích cổ phiếu!
 
-Đảm bảo Backend API đang chạy tại http://localhost:8000 trước khi sử dụng các bộ lọc.
+## ⚡ Công Nghệ Giao Diện Core
 
-## Các trang chính
-
-### Dashboard
-Trang tổng quan hệ thống. Hiển thị thông tin chung về thị trường.
-
-### Bộ lọc Benjamin Graham
-- Chọn ngày tham chiếu bằng DatePicker
-- 8 tiêu chí lọc có thể bật/tắt và điều chỉnh ngưỡng
-- Bảng kết quả với sắp xếp và phân trang
-- Click vào mã cổ phiếu để xem biểu đồ lịch sử (Price vs Value, Historical Bands)
-- Dashboard biểu đồ: Treemap, Scatter, Bubble, Shield Bar, Sector Donut
-
-### Bộ lọc CANSLIM
-- Chọn ngày tham chiếu
-- 4 tiêu chí có thể điều chỉnh: Delta EPS, Delta Sales, ROE, RS Rating
-- Bảng kết quả với 4 hệ thống Rating (RS, EPS, SMR, A/D) và chỉ số CR tổng hợp
-- Biểu đồ xếp hạng ngành theo RS Rating trung bình (Top ngành dẫn dắt)
-- Màu sắc Rating: xanh dương (≥90, Blue Chip), xanh lá (≥70), vàng (≥50), đỏ (<50)
-
-### Bộ lọc Cổ tức
-- 3 tiêu chí: Số năm liên tục, Tỷ suất cổ tức tối thiểu, Hệ số bao phủ tối thiểu
-- Bảng kết quả với progress bar cho tỷ suất cổ tức
-
-## Theme
-
-Hỗ trợ Dark mode và Light mode. Chuyển đổi bằng nút ở góc trên bên phải. Trạng thái được lưu trong localStorage.
-
-## Công nghệ
-
-| Thành phần | Công nghệ |
-|---|---|
-| Framework | React 18 |
-| Language | TypeScript |
-| Build Tool | Vite |
-| Styling | TailwindCSS |
-| Icons | Material Symbols |
-| Package Manager | pnpm |
+- **Engine Vẽ React**: `React 18` siêu phân luồng.
+- **Hệ Thống Phân Kiểu**: `TypeScript` bóc lỗi tĩnh.
+- **Kiến Trúc Tốc Độ**: `Vite` cực nhẹ.
+- **Lưới Cấu Trúc Mĩ Thuật**: `TailwindCSS` (Cấu hình tokens màu CSS Variables tùy chỉnh).
+- **Trái Tim Xử Lý Chart**: `ApexCharts` (Render tương tác nặng cực đẹp) & `Recharts` (Đóng gói SVG tĩnh tiện dụng).
+- **Hệ Biểu Trưng**: `Material Symbols` Google 2024.

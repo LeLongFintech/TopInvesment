@@ -81,6 +81,9 @@ python -m database.compute_graham
 
 # 3. Xây dựng Data Warehouse & Điểm Rating cho bộ lọc CANSLIM
 python -m database.compute_canslim
+
+# 4. Xây dựng Data Warehose & Metrics cho bộ lọc cổ tức
+python -m database.compute_dividend
 ```
 
 Mở Server Backend:

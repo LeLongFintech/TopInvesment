@@ -16,50 +16,59 @@ interface Props {
  * Lower P/E, lower P/B, lower D/E are BETTER (inverted).
  * Higher CR, higher Div Yield, higher EPS growth are better (direct).
  */
-function normalizeGraham(pe: number | null, pb: number | null, cr: number | null,
+function normalize(pe: number | null, pb: number | null, cr: number | null,
   de: number | null, dy: number | null, epsG: number | null) {
-  return {
-    pe: pe != null ? Math.max(0, Math.min(100, (1 - pe / 30) * 100)) : 0,
-    pb: pb != null ? Math.max(0, Math.min(100, (1 - pb / 3) * 100)) : 0,
-    cr: cr != null ? Math.max(0, Math.min(100, (cr / 4) * 100)) : 0,
-    de: de != null ? Math.max(0, Math.min(100, (1 - de / 2) * 100)) : 0,
-    dy: dy != null ? Math.max(0, Math.min(100, (dy / 0.15) * 100)) : 0,
-    epsG: epsG != null ? Math.max(0, Math.min(100, (epsG / 50) * 100)) : 0,
-  };
+  const clamp = (v: number) => Math.max(0, Math.min(100, Math.round(v)));
+  return [
+    clamp(pe != null ? (1 - pe / 30) * 100 : 0),     // P/E thấp = tốt
+    clamp(pb != null ? (1 - pb / 3) * 100 : 0),       // P/B thấp = tốt
+    clamp(cr != null ? (cr / 4) * 100 : 0),            // CR cao = tốt
+    clamp(de != null ? (1 - de / 2) * 100 : 0),        // D/E thấp = tốt
+    clamp(dy != null ? (dy / 0.15) * 100 : 0),         // DY cao = tốt
+    clamp(epsG != null ? (epsG / 50) * 100 : 0),       // EPS Growth cao = tốt
+  ];
 }
 
 export default function GrahamRadar({ pe, pb, currentRatio, deRatio, dividendYield, epsGrowth }: Props) {
-  const scores = normalizeGraham(pe, pb, currentRatio, deRatio, dividendYield, epsGrowth);
+  const stockScores = normalize(pe, pb, currentRatio, deRatio, dividendYield, epsGrowth);
+  const grahamStd = normalize(15, 1.5, 2, 1, 0.05, 10);
 
-  // Graham standard zone (P/E<=15 → 50%, P/B<=1.5 → 50%, CR>=2 → 50%, D/E<=1 → 50%, DY>=5% → 33%, EPS>0)
-  const grahamStd = normalizeGraham(15, 1.5, 2, 1, 0.05, 10);
+  const labels = ['P/E thấp', 'P/B thấp', 'Thanh toán', 'Nợ thấp', 'Cổ tức', 'EPS Growth'];
 
   const options: ApexOptions = {
-    chart: { type: 'radar', background: 'transparent', toolbar: { show: false } },
-    theme: { mode: 'dark' },
-    colors: ['rgba(100,116,139,0.35)', '#6366f1'],
-    stroke: { width: [2, 2.5] },
-    fill: { opacity: [0.1, 0.25] },
-    markers: { size: [0, 4], colors: ['transparent', '#6366f1'], strokeColors: '#fff', strokeWidth: 1 },
-    xaxis: {
-      categories: ['P/E thấp', 'P/B thấp', 'Thanh toán (CR)', 'Nợ thấp (D/E)', 'Cổ tức (DY)', 'EPS Growth'],
-      labels: { style: { colors: Array(6).fill('#94a3b8'), fontSize: '11px' } },
+    chart: {
+      type: 'radar',
+      background: 'transparent',
+      toolbar: { show: false },
+      dropShadow: { enabled: false },
     },
-    yaxis: { show: false, max: 100 },
-    plotOptions: { radar: { polygons: { strokeColors: '#334155', connectorColors: '#334155', fill: { colors: ['transparent'] } } } },
-    legend: { labels: { colors: '#e2e8f0' }, position: 'bottom', fontSize: '12px' },
-    tooltip: { theme: 'dark', y: { formatter: (v: number) => v.toFixed(0) + '/100' } },
+    theme: { mode: 'dark' },
+    colors: ['#64748b', '#818cf8'],
+    stroke: { width: 2 },
+    fill: { opacity: [0.1, 0.3] },
+    markers: { size: [0, 4], hover: { size: 6 } },
+    xaxis: {
+      categories: labels,
+      labels: {
+        style: { colors: labels.map(() => '#94a3b8'), fontSize: '11px' },
+      },
+    },
+    yaxis: { show: false, min: 0, max: 100, tickAmount: 5 },
+    legend: {
+      show: true,
+      position: 'bottom',
+      labels: { colors: '#e2e8f0' },
+      fontSize: '12px',
+    },
+    tooltip: {
+      theme: 'dark',
+      y: { formatter: (v: number) => v + '/100' },
+    },
   };
 
   const series = [
-    {
-      name: 'Chuẩn Graham',
-      data: [grahamStd.pe, grahamStd.pb, grahamStd.cr, grahamStd.de, grahamStd.dy, grahamStd.epsG],
-    },
-    {
-      name: 'Cổ phiếu hiện tại',
-      data: [scores.pe, scores.pb, scores.cr, scores.de, scores.dy, scores.epsG],
-    },
+    { name: 'Chuẩn Graham', data: grahamStd },
+    { name: 'Cổ phiếu hiện tại', data: stockScores },
   ];
 
   return (
@@ -69,7 +78,7 @@ export default function GrahamRadar({ pe, pb, currentRatio, deRatio, dividendYie
         <h4 className="text-heading font-bold">Điểm Graham (Radar)</h4>
       </div>
       <p className="text-muted text-xs mb-3">Vùng tím bứt ra khỏi vùng xám = vượt chuẩn Graham</p>
-      <Chart options={options} series={series} type="radar" height={320} />
+      <Chart options={options} series={series} type="radar" height={340} />
       <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
         {[
           { label: 'P/E', val: pe?.toFixed(1), good: pe != null && pe <= 15 },

@@ -1,6 +1,13 @@
 import React, { useState, useCallback } from 'react';
 import DatePicker from '../components/ui/DatePicker';
-import { fetchCanslimFilter } from '../api/canslimApi';
+import { fetchCanslimFilter, fetchCanslimStockDetail } from '../api/canslimApi';
+import EpsQuarterlyCombo from '../components/charts/canslim/EpsQuarterlyCombo';
+import EpsAnnualGrowth from '../components/charts/canslim/EpsAnnualGrowth';
+import RoeGauge from '../components/charts/canslim/RoeGauge';
+import VolumeObv from '../components/charts/canslim/VolumeObv';
+import PriceMaChart from '../components/charts/canslim/PriceMaChart';
+import RsLineChart from '../components/charts/canslim/RsLineChart';
+import IndustryHeatmap from '../components/charts/canslim/IndustryHeatmap';
 
 /* ── Types ─────────────────────────────────────────────────── */
 interface CanslimResultItem {
@@ -80,6 +87,11 @@ export default function CanslimFilter() {
   const [sortOrder, setSortOrder] = useState('desc');
   const [page, setPage] = useState(1);
 
+  // Drill-down state
+  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+  const [detailData, setDetailData] = useState<any>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
   const canRun = selectedDate.length > 0;
 
   /* ── Handlers ────────────────────────────────────────────── */
@@ -112,6 +124,17 @@ export default function CanslimFilter() {
   }, [selectedDate, criteria, sortBy, sortOrder, canRun]);
 
   const resetCriteria = () => setCriteria({ ...DEFAULT_CRITERIA });
+
+  const openStockDetail = useCallback(async (symbol: string) => {
+    if (selectedSymbol === symbol) { setSelectedSymbol(null); setDetailData(null); return; }
+    setSelectedSymbol(symbol);
+    setDetailLoading(true);
+    try {
+      const data = await fetchCanslimStockDetail(symbol, 2);
+      setDetailData(data);
+    } catch { setDetailData(null); }
+    finally { setDetailLoading(false); }
+  }, [selectedSymbol]);
 
   /* ── Render ──────────────────────────────────────────────── */
   return (
@@ -381,7 +404,11 @@ export default function CanslimFilter() {
                       </thead>
                       <tbody className="text-sm divide-y divide-line/20">
                         {results.items.map((item, idx) => (
-                          <tr key={item.symbol} className="group hover:bg-heading/5 transition-colors">
+                          <tr
+                            key={item.symbol}
+                            onClick={() => openStockDetail(item.symbol)}
+                            className={`group hover:bg-heading/5 transition-colors cursor-pointer ${selectedSymbol === item.symbol ? 'bg-primary/5 ring-1 ring-primary/30' : ''}`}
+                          >
                             <td className="p-4 text-muted text-xs">
                               {(results.page - 1) * results.page_size + idx + 1}
                             </td>
@@ -527,6 +554,73 @@ export default function CanslimFilter() {
             </div>
           );
         })()}
+
+        {/* ── Khu vực 7: Industry Heatmap ───────────────── */}
+        {results && results.items.length > 0 && (
+          <IndustryHeatmap items={results.items} />
+        )}
+
+        {/* ── Stock Detail Modal ──────────────────────── */}
+        {selectedSymbol && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => { setSelectedSymbol(null); setDetailData(null); }}
+            />
+            <div className="relative w-full max-w-6xl max-h-[90vh] bg-page border border-line rounded-2xl shadow-2xl shadow-black/30 overflow-hidden flex flex-col">
+              {/* Modal header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-line bg-sidebar shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-primary">analytics</span>
+                  </div>
+                  <div>
+                    <h3 className="text-heading font-bold text-lg">{selectedSymbol}</h3>
+                    <p className="text-muted text-xs">{detailData?.gics_industry || 'Đang tải...'}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setSelectedSymbol(null); setDetailData(null); }}
+                  className="size-9 rounded-lg bg-el hover:bg-red-500/20 flex items-center justify-center text-muted hover:text-red-400 transition-colors"
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+              {/* Modal body */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {detailLoading ? (
+                  <div className="flex items-center justify-center py-20">
+                    <span className="material-symbols-outlined animate-spin text-4xl text-primary">progress_activity</span>
+                    <span className="text-muted ml-3 text-lg">Đang tải dữ liệu phân tích...</span>
+                  </div>
+                ) : detailData ? (
+                  <>
+                    {/* Row 1: EPS Quarterly + ROE Gauge */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                      <div className="lg:col-span-2">
+                        <EpsQuarterlyCombo data={detailData.quarterly_eps || []} />
+                      </div>
+                      <RoeGauge roe={detailData.current_roe} />
+                    </div>
+                    {/* Row 2: Annual EPS Growth */}
+                    <EpsAnnualGrowth data={detailData.annual_growth || []} />
+                    {/* Row 3: Price + MA */}
+                    <PriceMaChart data={detailData.daily || []} symbol={selectedSymbol} />
+                    {/* Row 4: Volume + OBV */}
+                    <VolumeObv data={detailData.daily || []} />
+                    {/* Row 5: RS Line + Blue Dots */}
+                    <RsLineChart data={detailData.daily || []} symbol={selectedSymbol} />
+                  </>
+                ) : (
+                  <div className="text-center py-20">
+                    <span className="material-symbols-outlined text-4xl text-muted mb-3 block">info</span>
+                    <p className="text-muted text-lg">Không có dữ liệu cho mã này</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="pt-6 border-t border-line flex flex-col md:flex-row justify-between items-center text-muted text-sm">

@@ -9,13 +9,13 @@ from app.schemas.dividend import (
     DividendYearlyPoint,
 )
 
-REFERENCE_YEAR = 2025
+REFERENCE_YEAR = 2024
 
 
 class DividendService:
     """Dividend screening — 4-step filter using pre-computed dividend_metrics.
 
-    Step 1: Check consecutive dividend payment (N years from 2025)
+    Step 1: Check consecutive dividend payment (N years from 2024)
     Step 2: AVG(dividend_yield) over N years >= threshold
     Step 3: AVG(coverage_ratio) over N years >= threshold
     Step 4: Rank by AVG coverage_ratio DESC

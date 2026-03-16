@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 class DividendFilterRequest(BaseModel):
     consecutive_years: Literal[3, 4, 5] = Field(
         5,
-        description="Số năm liên tục trả cổ tức (tham chiếu ngược từ 2025)",
+        description="Số năm liên tục trả cổ tức (tham chiếu ngược từ 2024)",
     )
     dividend_yield_min: float = Field(
         0.05,
@@ -49,7 +49,7 @@ class DividendFilterResponse(BaseModel):
     total: int = 0
     page: int = 1
     page_size: int = 50
-    reference_year: int = Field(2025, description="Năm tham chiếu")
+    reference_year: int = Field(2024, description="Năm tham chiếu")
     years_analyzed: int = Field(5, description="Số năm phân tích")
 
 

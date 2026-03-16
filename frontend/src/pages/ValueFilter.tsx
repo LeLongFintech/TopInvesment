@@ -6,8 +6,13 @@ import GrahamTreemap from '../components/charts/graham/GrahamTreemap';
 import GrahamShieldBar from '../components/charts/graham/GrahamShieldBar';
 import GrahamPriceVsValue from '../components/charts/graham/GrahamPriceVsValue';
 import GrahamHistoricalBands from '../components/charts/graham/GrahamHistoricalBands';
+import GrahamRadar from '../components/charts/graham/GrahamRadar';
+import GrahamBullet from '../components/charts/graham/GrahamBullet';
+import GrahamWaterfall from '../components/charts/graham/GrahamWaterfall';
+import GrahamEpsHistory from '../components/charts/graham/GrahamEpsHistory';
+import GrahamPeHistogram from '../components/charts/graham/GrahamPeHistogram';
 import DatePicker from '../components/ui/DatePicker';
-import { fetchValueFilter, fetchStockDetail } from '../api/valueApi';
+import { fetchValueFilter, fetchStockDetail, fetchGrahamChartDetail } from '../api/valueApi';
 
 /* ── Types ─────────────────────────────────────────────────── */
 interface GrahamResultItem {
@@ -91,6 +96,7 @@ export default function ValueFilter() {
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
   const [detailData, setDetailData] = useState<any>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [chartData, setChartData] = useState<any>(null);
 
   const canRun = selectedDate.length > 0;
 
@@ -137,15 +143,19 @@ export default function ValueFilter() {
   };
 
   const openStockDetail = useCallback(async (symbol: string) => {
-    if (selectedSymbol === symbol) { setSelectedSymbol(null); setDetailData(null); return; }
+    if (selectedSymbol === symbol) { setSelectedSymbol(null); setDetailData(null); setChartData(null); return; }
     setSelectedSymbol(symbol);
     setDetailLoading(true);
     try {
-      const data = await fetchStockDetail(symbol);
-      setDetailData(data);
-    } catch { setDetailData(null); }
+      const [historyRes, chartRes] = await Promise.all([
+        fetchStockDetail(symbol),
+        selectedDate ? fetchGrahamChartDetail(symbol, selectedDate) : Promise.resolve(null),
+      ]);
+      setDetailData(historyRes);
+      setChartData(chartRes);
+    } catch { setDetailData(null); setChartData(null); }
     finally { setDetailLoading(false); }
-  }, [selectedSymbol]);
+  }, [selectedSymbol, selectedDate]);
 
   /* ── Criterion card ──────────────────────────────────────── */
   const CriterionCard = ({
@@ -564,10 +574,56 @@ export default function ValueFilter() {
                     <span className="material-symbols-outlined animate-spin text-4xl text-primary">progress_activity</span>
                     <span className="text-muted ml-3 text-lg">Đang tải dữ liệu lịch sử...</span>
                   </div>
-                ) : detailData?.history?.length ? (
+                ) : detailData?.history?.length || chartData ? (
                   <>
-                    <GrahamPriceVsValue data={detailData.history} symbol={selectedSymbol} />
-                    <GrahamHistoricalBands data={detailData.history} symbol={selectedSymbol} />
+                    {/* Row 1: Radar + Bullet */}
+                    {chartData && (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <GrahamRadar
+                          pe={chartData.pe}
+                          pb={chartData.pb}
+                          currentRatio={chartData.current_ratio}
+                          deRatio={chartData.de_ratio}
+                          dividendYield={chartData.dividend_yield}
+                          epsGrowth={chartData.eps_growth}
+                        />
+                        <GrahamBullet
+                          currentRatio={chartData.current_ratio}
+                          deRatio={chartData.de_ratio}
+                        />
+                      </div>
+                    )}
+                    {/* Row 2: Waterfall + EPS History */}
+                    {chartData && (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <GrahamWaterfall
+                          grahamNumber={chartData.graham_number}
+                          closePrice={chartData.close_price}
+                          marginOfSafety={chartData.margin_of_safety}
+                          symbol={selectedSymbol}
+                        />
+                        <GrahamEpsHistory
+                          data={chartData.annual_eps_div || []}
+                          symbol={selectedSymbol}
+                        />
+                      </div>
+                    )}
+                    {/* Row 3: P/E Histogram (full width) */}
+                    {chartData && chartData.industry_pe?.length > 0 && (
+                      <GrahamPeHistogram
+                        data={chartData.industry_pe}
+                        currentSymbol={selectedSymbol}
+                        currentPe={chartData.pe}
+                        industry={chartData.gics_industry}
+                      />
+                    )}
+                    {/* Row 4-5: Existing charts */}
+                    {detailData?.history?.length > 0 && (
+                      <>
+                        <GrahamPriceVsValue data={detailData.history} symbol={selectedSymbol} />
+                        <GrahamHistoricalBands data={detailData.history} symbol={selectedSymbol} />
+                      </>
+                    )}
                   </>
                 ) : (
                   <div className="text-center py-20">

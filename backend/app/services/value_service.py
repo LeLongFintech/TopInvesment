@@ -4,10 +4,13 @@ from sqlalchemy import text
 
 from app.repositories.database import get_session
 from app.schemas.value import (
+    AnnualEpsDividend,
     BubblePoint,
+    GrahamChartDetailResponse,
     GrahamFilterRequest,
     GrahamFilterResponse,
     GrahamResultItem,
+    IndustryPeItem,
     ScatterPoint,
     SectorSlice,
     ShieldItem,
@@ -277,3 +280,118 @@ class ValueService:
             gics_industry=gics_industry,
             history=history,
         )
+
+    def get_chart_detail(self, symbol: str, date: str) -> GrahamChartDetailResponse:
+        """Data for 5 new Graham charts: radar, bullet, waterfall, EPS history, PE histogram."""
+        with get_session() as session:
+            # ── Industry ──────────────────────────────────────
+            ind_row = session.execute(
+                text("SELECT gics_industry FROM stocks WHERE symbol = :s"),
+                {"s": symbol},
+            ).mappings().first()
+            gics_industry = ind_row["gics_industry"] if ind_row else None
+
+            # ── Current metrics (for radar/bullet/waterfall) ──
+            cur = session.execute(
+                text("""
+                    SELECT pe, pb, current_ratio, de_ratio, dividend_yield,
+                           graham_number, close_price, margin_of_safety
+                    FROM graham_metrics
+                    WHERE symbol = :s AND date = :d
+                """),
+                {"s": symbol, "d": date},
+            ).mappings().first()
+
+            pe = pb = cr = de = dy = gn = cp = mos = None
+            if cur:
+                pe = round(float(cur["pe"]), 2) if cur["pe"] else None
+                pb = round(float(cur["pb"]), 2) if cur["pb"] else None
+                cr = round(float(cur["current_ratio"]), 2) if cur["current_ratio"] is not None else None
+                de = round(float(cur["de_ratio"]), 2) if cur["de_ratio"] is not None else None
+                dy = round(float(cur["dividend_yield"]), 4) if cur["dividend_yield"] is not None else None
+                gn = round(float(cur["graham_number"]), 2) if cur["graham_number"] else None
+                cp = round(float(cur["close_price"]), 2) if cur["close_price"] else None
+                mos = round(float(cur["margin_of_safety"]), 4) if cur["margin_of_safety"] is not None else None
+
+            # ── EPS Growth (for radar) ────────────────────────
+            eps_rows = session.execute(
+                text("""
+                    SELECT eps_basic_excl_extraordinary_items_common_total AS eps_val,
+                           EXTRACT(YEAR FROM date)::int AS yr
+                    FROM income_statement
+                    WHERE symbol = :s
+                    ORDER BY date
+                """),
+                {"s": symbol},
+            ).mappings().all()
+
+            eps_growth = None
+            if len(eps_rows) >= 2:
+                last_eps = float(eps_rows[-1]["eps_val"]) if eps_rows[-1]["eps_val"] else None
+                prev_eps = float(eps_rows[-2]["eps_val"]) if eps_rows[-2]["eps_val"] else None
+                if last_eps and prev_eps and prev_eps != 0:
+                    eps_growth = round((last_eps - prev_eps) / abs(prev_eps) * 100, 2)
+
+            # ── Chart 4: Annual EPS + Dividend (10yr) ─────────
+            annual_eps = session.execute(
+                text("""
+                    SELECT EXTRACT(YEAR FROM date)::int AS yr,
+                           eps_basic_excl_extraordinary_items_common_total AS eps_val
+                    FROM income_statement
+                    WHERE symbol = :s
+                    ORDER BY date
+                """),
+                {"s": symbol},
+            ).mappings().all()
+
+            annual_div = session.execute(
+                text("""
+                    SELECT EXTRACT(YEAR FROM date)::int AS yr,
+                           dividends_common_cash_paid AS div_paid
+                    FROM cash_flow
+                    WHERE symbol = :s
+                    ORDER BY date
+                """),
+                {"s": symbol},
+            ).mappings().all()
+
+            div_by_year = {int(r["yr"]): float(r["div_paid"]) if r["div_paid"] else None for r in annual_div}
+
+            annual_eps_div = [
+                AnnualEpsDividend(
+                    year=int(r["yr"]),
+                    eps=round(float(r["eps_val"]), 4) if r["eps_val"] is not None else None,
+                    dividend_per_share=round(abs(div_by_year.get(int(r["yr"]), 0) or 0), 4) if int(r["yr"]) in div_by_year else None,
+                )
+                for r in annual_eps
+            ]
+
+            # ── Chart 5: Industry P/E distribution ────────────
+            industry_pe: list[IndustryPeItem] = []
+            if gics_industry:
+                peers = session.execute(
+                    text("""
+                        SELECT gm.symbol, gm.pe
+                        FROM graham_metrics gm
+                        JOIN stocks s ON gm.symbol = s.symbol
+                        WHERE s.gics_industry = :ind
+                          AND gm.date = :d
+                          AND gm.pe > 0 AND gm.pe < 100
+                    """),
+                    {"ind": gics_industry, "d": date},
+                ).mappings().all()
+                industry_pe = [
+                    IndustryPeItem(symbol=r["symbol"], pe=round(float(r["pe"]), 2))
+                    for r in peers
+                ]
+
+        return GrahamChartDetailResponse(
+            symbol=symbol,
+            gics_industry=gics_industry,
+            pe=pe, pb=pb, current_ratio=cr, de_ratio=de,
+            dividend_yield=dy, eps_growth=eps_growth,
+            graham_number=gn, close_price=cp, margin_of_safety=mos,
+            annual_eps_div=annual_eps_div,
+            industry_pe=industry_pe,
+        )
+

@@ -17,3 +17,11 @@ export async function fetchStockDetail(symbol: string, years = 5) {
   if (!res.ok) throw new Error('Failed to load detail');
   return res.json();
 }
+
+export async function fetchGrahamChartDetail(symbol: string, date: string) {
+  const res = await fetch(
+    `${API_BASE}/filters/value/stock/${encodeURIComponent(symbol)}/charts?date=${encodeURIComponent(date)}`
+  );
+  if (!res.ok) throw new Error('Failed to load chart detail');
+  return res.json();
+}

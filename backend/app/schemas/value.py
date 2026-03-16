@@ -145,3 +145,38 @@ class StockDetailResponse(BaseModel):
     gics_industry: str | None = None
     history: list[StockHistoryPoint] = Field(default_factory=list)
 
+
+# ── Graham Chart Detail (5 new charts) ─────────────────────
+
+class AnnualEpsDividend(BaseModel):
+    year: int
+    eps: float | None = None
+    dividend_per_share: float | None = None
+
+
+class IndustryPeItem(BaseModel):
+    symbol: str
+    pe: float
+
+
+class GrahamChartDetailResponse(BaseModel):
+    symbol: str
+    gics_industry: str | None = None
+
+    # Radar data (current metrics)
+    pe: float | None = None
+    pb: float | None = None
+    current_ratio: float | None = None
+    de_ratio: float | None = None
+    dividend_yield: float | None = None
+    eps_growth: float | None = None
+    graham_number: float | None = None
+    close_price: float | None = None
+    margin_of_safety: float | None = None
+
+    # Chart 4: 10yr EPS + Dividend
+    annual_eps_div: list[AnnualEpsDividend] = Field(default_factory=list)
+
+    # Chart 5: Industry P/E distribution
+    industry_pe: list[IndustryPeItem] = Field(default_factory=list)
+

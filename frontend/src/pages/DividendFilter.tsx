@@ -2,6 +2,8 @@ import React, { useState, useCallback } from 'react';
 import { fetchDividendFilter, fetchDividendChartDetail } from '../api/dividendApi';
 import DividendYieldCombo from '../components/charts/dividend/DividendYieldCombo';
 import DcrTrendChart from '../components/charts/dividend/DcrTrendChart';
+import DividendScatter from '../components/charts/dividend/DividendScatter';
+import DividendSectorHeatmap from '../components/charts/dividend/DividendSectorHeatmap';
 
 /* ── Types ─────────────────────────────────────────────────── */
 interface DividendResultItem {
@@ -405,6 +407,21 @@ export default function DividendFilter() {
                 )}
               </>
             )}
+          </div>
+        )}
+
+        {/* ── Dashboard Charts (overview) ──────────────────── */}
+        {results && results.items.length > 0 && (
+          <div className="bg-surface-alt border border-line rounded-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-line bg-sidebar flex items-center gap-3">
+              <span className="material-symbols-outlined text-primary">dashboard</span>
+              <h3 className="text-heading font-bold text-lg">Dashboard Phân Tích — Bộ lọc Cổ tức</h3>
+              <span className="ml-auto text-muted text-xs">{results.total} cổ phiếu đạt tiêu chí</span>
+            </div>
+            <div className="p-5 space-y-5">
+              <DividendScatter data={results.items} />
+              <DividendSectorHeatmap data={results.items} />
+            </div>
           </div>
         )}
 

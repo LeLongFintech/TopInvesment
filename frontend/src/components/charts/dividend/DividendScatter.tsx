@@ -16,13 +16,13 @@ interface Props {
 export default function DividendScatter({ data }: Props) {
   if (data.length < 2) return null;
 
-  // Group into 3 zones for coloring
-  const seriesData = data.map(d => ({
-    x: +(d.avg_dividend_yield * 100).toFixed(2),
-    y: +d.avg_coverage_ratio.toFixed(2),
-    z: d.consecutive_dividend_years,
-    name: d.symbol,
-  }));
+  // ApexCharts bubble needs strictly [x, y, z] arrays to avoid interactivity bugs
+  const symbols = data.map(d => d.symbol);
+  const seriesData = data.map(d => [
+    +(d.avg_dividend_yield * 100).toFixed(2),   // X: Yield %
+    +d.avg_coverage_ratio.toFixed(2),           // Y: DCR
+    Math.max(1, d.consecutive_dividend_years)   // Z: Size (years)
+  ]);
 
   const options: ApexOptions = {
     chart: {
@@ -30,6 +30,7 @@ export default function DividendScatter({ data }: Props) {
       background: 'transparent',
       toolbar: { show: false },
       zoom: { enabled: true },
+      animations: { enabled: false }, // disable animations to prevent hover lag
     },
     theme: { mode: 'dark' },
     colors: ['#6366f1'],
@@ -51,22 +52,23 @@ export default function DividendScatter({ data }: Props) {
       enabled: true,
       textAnchor: 'middle',
       formatter: (_: number, opt: any) => {
-        const point = seriesData[opt.dataPointIndex];
-        return point?.name?.replace('.BK', '') || '';
+        const sym = symbols[opt.dataPointIndex];
+        return sym ? sym.replace('.BK', '') : '';
       },
       style: { fontSize: '9px', fontWeight: '700', colors: ['#e2e8f0'] },
     },
     grid: { borderColor: '#334155', strokeDashArray: 4 },
     tooltip: {
       theme: 'dark',
-      custom: ({ dataPointIndex }: any) => {
-        const p = seriesData[dataPointIndex];
-        if (!p) return '';
+      custom: ({ seriesIndex, dataPointIndex, w }: any) => {
+        const sym = symbols[dataPointIndex];
+        const point = w.config.series[seriesIndex].data[dataPointIndex];
+        if (!point) return '';
         return `<div class="px-3 py-2 text-xs">
-          <b>${p.name}</b><br/>
-          Yield: <b>${p.x.toFixed(2)}%</b><br/>
-          DCR: <b>${p.y.toFixed(2)}x</b><br/>
-          Liên tục: <b>${p.z} năm</b>
+          <b>${sym}</b><br/>
+          Yield: <b>${point[0]}%</b><br/>
+          DCR: <b>${point[1]}x</b><br/>
+          Liên tục: <b>${point[2]} năm</b>
         </div>`;
       },
     },
